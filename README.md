@@ -13,7 +13,7 @@ A modern, high-performance event ticketing application built with Next.js 16, Re
 
 ### User Experience
 - **Intuitive Navigation**: Clean, modern interface with smooth transitions
-- **Secure Authentication**: Protected routes with role-based access control
+- **Secure Authentication**: Google sign-in popup + Firebase session cookies for protected routes
 - **Event Discovery**: Search and filter events by category, date, and location
 - **Digital Wallet**: Store and manage purchased tickets
 
@@ -33,7 +33,7 @@ A modern, high-performance event ticketing application built with Next.js 16, Re
 - **Modern CSS** – Custom animations and transitions
 
 ### Development Tools
-- **ESLint 9** – Code linting and formatting
+- **ESLint** – Code linting and formatting
 - **PostCSS** – CSS processing pipeline
 - **Hot Reload** – Instant development feedback
 
@@ -42,8 +42,6 @@ A modern, high-performance event ticketing application built with Next.js 16, Re
 ```
 rush-in/
 ├── app/                          # Next.js App Router
-│   ├── (auth)/                   # Authentication routes
-│   │   └── login/               # User login page
 │   ├── (booking)/               # Ticket booking flow
 │   │   ├── checkout/            # Payment processing
 │   │   ├── select-tickets/      # Ticket selection
@@ -53,12 +51,13 @@ rush-in/
 │   │   └── organizer/           # Organizer dashboard
 │   ├── (organizer)/             # Organizer-specific routes
 │   │   ├── dashboard/           # Main organizer dashboard
-│   │   ├── events/              # Event management
+│   │   ├── my-events/           # Event management
 │   │   ├── payout/              # Financial management
 │   │   └── scanner/             # QR code scanner
 │   ├── (public)/                # Public routes
 │   │   └── page.tsx             # Homepage
 │   ├── api/                     # API routes
+│   │   └── auth/                # Session login/logout routes
 │   ├── layout.tsx               # Root layout
 │   ├── error.tsx                # Error boundary
 │   └── not-found.tsx            # 404 page
@@ -76,12 +75,13 @@ rush-in/
 │   ├── ticket.ts               # Ticket-related types
 │   └── user.ts                 # User-related types
 ├── styles/                      # Global styles and themes
-│   ├── fonts.css               # Custom font definitions
-│   ├── global.css              # Global styles
-│   └── variables.css           # CSS custom properties
+│   ├── fonts.css               # Custom font definitions (assets required)
+│   ├── global.css              # Global styles (imports variable.css + master.css)
+│   ├── master.css              # Project-specific UI styles (cards, header menu)
+│   └── variable.css            # CSS custom properties
 ├── lib/                         # Utility functions and configurations
 ├── public/                      # Static assets
-└── middleware.ts                # Next.js middleware
+└── proxy.ts                     # Request proxy (replaces deprecated middleware.ts)
 ```
 
 ## 🎨 Design System
@@ -156,11 +156,50 @@ rush-in/
 Create a `.env.local` file in the root directory:
 
 ```env
-# Add your environment variables here
-NEXTAUTH_URL=http://localhost:3000
-NEXTAUTH_SECRET=your-secret-key
-DATABASE_URL=your-database-url
+# Firebase Client (used in browser)
+NEXT_PUBLIC_FIREBASE_API_KEY=...
+NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN=...
+NEXT_PUBLIC_FIREBASE_PROJECT_ID=...
+NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET=...
+NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID=...
+NEXT_PUBLIC_FIREBASE_APP_ID=...
+NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID=...
+
+# Firebase Admin (server only)
+FIREBASE_PROJECT_ID=...
+FIREBASE_CLIENT_EMAIL=...
+FIREBASE_PRIVATE_KEY="-----BEGIN PRIVATE KEY-----\n...\n-----END PRIVATE KEY-----\n"
 ```
+
+## 🔐 Authentication (Current)
+
+- Client uses Firebase **Google sign-in popup** from the header.
+- After popup login, the client sends the ID token to:
+  - `POST /api/auth/login`
+- Server creates a **Firebase session cookie** and sets it as `session` (httpOnly).
+- Server-side user lookup is done via:
+  - `lib/auth/getUser.ts` (`getCurrentUser()` reads and verifies the session cookie)
+- Logout:
+  - `POST /api/auth/logout` clears the cookie.
+
+## 🧭 Protected Routes
+
+Request gating is handled in `proxy.ts` (Next.js proxy):
+
+- Redirects unauthenticated access for organizer paths.
+- Verifies session cookie on protected matchers.
+
+## 🧪 Development Notes (Windows / OneDrive)
+
+If you see Turbopack/Dev errors like `os error 32` (file locked) under `.next`, it is commonly caused by OneDrive sync or antivirus locking files.
+
+- Prefer running dev with webpack:
+
+```bash
+npx next dev --webpack
+```
+
+- If it persists, move the repo out of OneDrive (e.g. `C:\Projects\rush-in`).
 
 ## 🚀 Deployment
 

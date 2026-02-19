@@ -1,0 +1,93 @@
+.btn-pill {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--spacing-2) var(--spacing-5);
+  border-radius: var(--radius-full);
+  background-color: var(--color-bg-light);
+  color: var(--color-bg-dark);
+  font-family: var(--font-family-avalon);
+  font-size: var(--font-button-size);
+  font-weight: var(--font-weight-semibold);
+  text-transform: none;
+
+  transition: transform var(--transition-fast),
+              opacity var(--transition-fast);
+}
+
+.card-link {
+  display: block;
+  width: 100%;
+}
+
+.card {
+  position: relative;
+  width: min(100%, 1080px);
+  aspect-ratio: 3 / 4;
+  max-height: 1440px;
+  overflow: hidden;
+  border-radius: var(--radius-xl);
+}
+
+.card-placeholder {
+  width: 100%;
+  height: 100%;
+  background: #2b2b2b;
+}
+
+.user-chip {
+  width: 44px;
+  height: 44px;
+  border-radius: 9999px;
+  border: 1px solid var(--color-border-on-dark-subtle);
+  background: var(--color-bg-dark-secondary);
+  color: var(--color-text-on-dark-primary);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-family-avalon);
+  font-weight: var(--font-weight-semibold);
+  cursor: pointer;
+}
+
+.user-menu {
+  position: absolute;
+  top: calc(100% + var(--spacing-3));
+  right: 0;
+  min-width: 220px;
+  padding: var(--spacing-2);
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--color-border-on-dark-subtle);
+  background: var(--color-bg-dark-secondary);
+  z-index: 50;
+}
+
+.user-menu-item {
+  width: 100%;
+  text-align: left;
+  padding: var(--spacing-3) var(--spacing-4);
+  border-radius: var(--radius-md);
+  background: transparent;
+  border: 0;
+  color: var(--color-text-on-dark-primary);
+  cursor: pointer;
+}
+
+.user-menu-item:hover {
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.user-menu-sep {
+  height: 1px;
+  margin: var(--spacing-2) 0;
+  background: var(--color-border-on-dark-subtle);
+}
+
+.btn-pill:hover {
+  transform: translateY(-2px);
+  opacity: var(--opacity-90);
+}
+
+.btn-pill:active {
+  transform: translateY(0);
+}

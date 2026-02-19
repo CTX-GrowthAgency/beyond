@@ -1,36 +1,199 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# RUSH IN – Fastest Event Ticketing Platform
 
-## Getting Started
+A modern, high-performance event ticketing application built with Next.js 16, React 19, and Tailwind CSS. Experience seamless ticket purchasing, QR code scanning, and instant event entry.
 
-First, run the development server:
+## 🚀 Features
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+### Core Functionality
+- **Fast Ticket Booking**: Browse events and purchase tickets instantly
+- **QR Code Integration**: Digital tickets with scannable QR codes for quick venue entry
+- **Multi-Role System**: Separate interfaces for users, organizers, and administrators
+- **Real-time Dashboard**: Track sales, attendance, and event performance
+- **Mobile-First Design**: Optimized for all devices with responsive layouts
+
+### User Experience
+- **Intuitive Navigation**: Clean, modern interface with smooth transitions
+- **Secure Authentication**: Protected routes with role-based access control
+- **Event Discovery**: Search and filter events by category, date, and location
+- **Digital Wallet**: Store and manage purchased tickets
+
+### Organizer Tools
+- **Event Management**: Create, edit, and manage events with detailed settings
+- **Sales Analytics**: Real-time insights into ticket sales and revenue
+- **QR Scanner**: Built-in scanner for venue entry management
+- **Payout System**: Automated payment processing and financial tracking
+
+## 🛠 Tech Stack
+
+### Frontend
+- **Next.js 16.1.6** – React framework with App Router
+- **React 19.2.3** – Latest React with concurrent features
+- **TypeScript 5** – Type-safe development
+- **Tailwind CSS 4** – Utility-first CSS framework
+- **Modern CSS** – Custom animations and transitions
+
+### Development Tools
+- **ESLint 9** – Code linting and formatting
+- **PostCSS** – CSS processing pipeline
+- **Hot Reload** – Instant development feedback
+
+## 📁 Project Structure
+
+```
+rush-in/
+├── app/                          # Next.js App Router
+│   ├── (auth)/                   # Authentication routes
+│   │   └── login/               # User login page
+│   ├── (booking)/               # Ticket booking flow
+│   │   ├── checkout/            # Payment processing
+│   │   ├── select-tickets/      # Ticket selection
+│   │   └── success/             # Booking confirmation
+│   ├── (dashboard)/             # Dashboard routes
+│   │   ├── admin/               # Admin dashboard
+│   │   └── organizer/           # Organizer dashboard
+│   ├── (organizer)/             # Organizer-specific routes
+│   │   ├── dashboard/           # Main organizer dashboard
+│   │   ├── events/              # Event management
+│   │   ├── payout/              # Financial management
+│   │   └── scanner/             # QR code scanner
+│   ├── (public)/                # Public routes
+│   │   └── page.tsx             # Homepage
+│   ├── api/                     # API routes
+│   ├── layout.tsx               # Root layout
+│   ├── error.tsx                # Error boundary
+│   └── not-found.tsx            # 404 page
+├── components/                   # Reusable React components
+│   ├── event/                   # Event-related components
+│   │   ├── EventCard.tsx        # Event display card
+│   │   └── TicketSelector.tsx   # Ticket selection interface
+│   ├── layout/                  # Layout components
+│   └── ui/                      # UI primitives
+│       ├── Button.tsx           # Custom button component
+│       ├── Loader.tsx           # Loading states
+│       └── Modal.tsx            # Modal dialogs
+├── types/                       # TypeScript type definitions
+│   ├── event.ts                # Event-related types
+│   ├── ticket.ts               # Ticket-related types
+│   └── user.ts                 # User-related types
+├── styles/                      # Global styles and themes
+│   ├── fonts.css               # Custom font definitions
+│   ├── global.css              # Global styles
+│   └── variables.css           # CSS custom properties
+├── lib/                         # Utility functions and configurations
+├── public/                      # Static assets
+└── middleware.ts                # Next.js middleware
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## 🎨 Design System
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+### Styling Approach
+- **Modern CSS Architecture**: Organized with variables, global styles, and component-specific styles
+- **Accessibility First**: Reduced motion support, focus management, and semantic HTML
+- **Performance Optimized**: Efficient CSS with minimal bundle impact
+- **Responsive Design**: Mobile-first approach with fluid layouts
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+### Key Features
+- Custom CSS variables for consistent theming
+- Smooth animations and micro-interactions
+- Optimized font loading with `next/font`
+- Cross-browser compatibility
 
-## Learn More
+## 🚀 Getting Started
 
-To learn more about Next.js, take a look at the following resources:
+### Prerequisites
+- Node.js 18+ 
+- npm, yarn, pnpm, or bun
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+### Installation
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+1. **Clone the repository**
+   ```bash
+   git clone <repository-url>
+   cd rush-in
+   ```
 
-## Deploy on Vercel
+2. **Install dependencies**
+   ```bash
+   npm install
+   # or
+   yarn install
+   # or
+   pnpm install
+   # or
+   bun install
+   ```
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+3. **Set up environment variables**
+   ```bash
+   cp .env.example .env.local
+   ```
+   Configure your environment variables in `.env.local`
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+4. **Run the development server**
+   ```bash
+   npm run dev
+   # or
+   yarn dev
+   # or
+   pnpm dev
+   # or
+   bun dev
+   ```
+
+5. **Open your browser**
+   Navigate to [http://localhost:3000](http://localhost:3000)
+
+## 📱 Available Scripts
+
+- `npm run dev` – Start development server
+- `npm run build` – Build for production
+- `npm run start` – Start production server
+- `npm run lint` – Run ESLint
+
+## 🔧 Configuration
+
+### Environment Variables
+Create a `.env.local` file in the root directory:
+
+```env
+# Add your environment variables here
+NEXTAUTH_URL=http://localhost:3000
+NEXTAUTH_SECRET=your-secret-key
+DATABASE_URL=your-database-url
+```
+
+## 🚀 Deployment
+
+### Vercel (Recommended)
+1. Push your code to GitHub
+2. Connect your repository to [Vercel](https://vercel.com)
+3. Configure environment variables
+4. Deploy automatically
+
+### Other Platforms
+```bash
+npm run build
+npm run start
+```
+
+## 🤝 Contributing
+
+1. Fork the repository
+2. Create a feature branch (`git checkout -b feature/amazing-feature`)
+3. Commit your changes (`git commit -m 'Add amazing feature'`)
+4. Push to the branch (`git push origin feature/amazing-feature`)
+5. Open a Pull Request
+
+## 📄 License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+## 🔗 Links
+
+- **Live Demo**: [https://rushin.app](https://rushin.app)
+- **Documentation**: [Next.js Documentation](https://nextjs.org/docs)
+- **Support**: Open an issue on GitHub
+
+---
+
+Built with ❤️ using Next.js, React, and Tailwind CSS

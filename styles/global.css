@@ -1,0 +1,723 @@
+/**
+ * CTX Growth Agency - Global Styles
+ * Based on: @ctxgrowthagency/minimalbold-web
+ */
+
+@import url("./variable.css");
+@import url("./master.css");
+/* ============================================
+   MODERN CSS BASELINE
+   ============================================ */
+
+* {
+  /* Font rendering improvements */
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  -webkit-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+}
+
+/* ============================================
+   ACCESSIBILITY
+   ============================================ */
+
+/* Reduced motion for users who prefer it */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* Focus visible for keyboard navigation */
+:focus-visible {
+  outline: 2px solid var(--color-text-on-dark-primary);
+  outline-offset: 4px;
+  border-radius: var(--radius-sm);
+}
+
+/* ============================================
+   ROOT & BODY
+   ============================================ */
+
+html {
+  font-size: var(--font-body-2-size);
+  scroll-behavior: smooth;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+}
+
+body {
+  font-family: var(--font-family-avalon);
+  font-size: var(--font-body-1-size);
+  font-weight: var(--font-weight-regular);
+  color: var(--color-text-on-dark-primary);
+  background-color: var(--color-bg-dark);
+  min-height: 100vh;
+  overflow-x: hidden;
+  line-height: var(--line-height-relaxed);
+}
+h1, h2, h3, h4, h5, h6, a, p{
+  -webkit-user-select: text;
+  -ms-user-select: text;
+  user-select: text;
+}
+/* ============================================
+   TYPOGRAPHY STYLES
+   ============================================ */
+
+/* Display Serif Styles */
+.display-serif-1 {
+  font-family: var(--font-family-editorial);
+  font-size: var(--font-display-1-size);
+  font-weight: var(--font-weight-bold);
+  line-height: var(--line-height-tight);
+  letter-spacing: var(--letter-spacing-tighter);
+  text-wrap: balance;
+}
+
+.display-serif-2 {
+  font-family: var(--font-family-editorial);
+  font-size: var(--font-display-2-size);
+  font-weight: var(--font-weight-bold);
+  line-height: var(--line-height-tight);
+  letter-spacing: var(--letter-spacing-tight);
+  text-wrap: balance;
+}
+
+.display-serif-3 {
+  font-family: var(--font-family-editorial);
+  font-size: var(--font-display-3-size);
+  font-weight: var(--font-weight-bold);
+  line-height: var(--line-height-tight);
+  letter-spacing: var(--letter-spacing-tight);
+  text-wrap: balance;
+}
+
+/* Display Sans Serif Styles */
+.display-sans-serif-1 {
+  font-family: var(--font-family-avalon);
+  font-size: var(--font-display-1-size);
+  font-weight: var(--font-weight-bold);
+  line-height: var(--line-height-tight);
+  letter-spacing: var(--letter-spacing-tighter);
+  text-wrap: balance;
+}
+
+.display-sans-serif-2 {
+  font-family: var(--font-family-avalon);
+  font-size: var(--font-display-2-size);
+  font-weight: var(--font-weight-bold);
+  line-height: var(--line-height-tight);
+  letter-spacing: var(--letter-spacing-tight);
+  text-wrap: balance;
+}
+
+.display-sans-serif-3 {
+  font-family: var(--font-family-avalon);
+  font-size: var(--font-display-3-size);
+  font-weight: var(--font-weight-bold);
+  line-height: var(--line-height-tight);
+  letter-spacing: var(--letter-spacing-tight);
+  text-wrap: balance;
+}
+
+/* Heading Styles */
+h1,
+.heading-1 {
+  font-family: var(--font-family-avalon);
+  font-size: var(--font-heading-1-size);
+  font-weight: var(--font-weight-bold);
+  line-height: var(--line-height-snug);
+  letter-spacing: var(--letter-spacing-tight);
+  text-wrap: balance;
+}
+
+h2,
+.heading-2 {
+  font-family: var(--font-family-avalon);
+  font-size: var(--font-heading-2-size);
+  font-weight: var(--font-weight-bold);
+  line-height: var(--line-height-snug);
+  letter-spacing: var(--letter-spacing-normal);
+  text-wrap: balance;
+}
+
+h3,
+.heading-3 {
+  font-family: var(--font-family-avalon);
+  font-size: var(--font-heading-3-size);
+  font-weight: var(--font-weight-semibold);
+  line-height: var(--line-height-snug);
+  letter-spacing: var(--letter-spacing-normal);
+  text-wrap: balance;
+}
+
+/* Body Styles */
+p,
+.body-1 {
+  font-family: var(--font-family-avalon);
+  font-size: var(--font-body-1-size);
+  font-weight: var(--font-weight-regular);
+  line-height: var(--line-height-relaxed);
+  letter-spacing: var(--letter-spacing-normal);
+  text-wrap: pretty;
+}
+
+.body-2 {
+  font-family: var(--font-family-avalon);
+  font-size: var(--font-body-2-size);
+  font-weight: var(--font-weight-regular);
+  line-height: var(--line-height-normal);
+  letter-spacing: var(--letter-spacing-normal);
+  text-wrap: pretty;
+}
+
+/* Label Style */
+.label {
+  font-family: var(--font-family-avalon);
+  font-size: var(--font-label-size);
+  font-weight: var(--font-weight-medium);
+  text-transform: var(--font-label-text-transform);
+  line-height: var(--font-label-line-height);
+  letter-spacing: var(--letter-spacing-normal);
+}
+
+/* Code Style */
+code,
+.code {
+  font-family: var(--font-family-sf-mono);
+  font-size: var(--font-code-size);
+  font-weight: var(--font-weight-regular);
+  line-height: var(--line-height-relaxed);
+  letter-spacing: var(--letter-spacing-normal);
+}
+
+/* ============================================
+   LINKS
+   ============================================ */
+
+a {
+  color: inherit;
+  text-decoration: none;
+  transition: opacity var(--transition-fast);
+}
+
+a:hover {
+  opacity: var(--opacity-80);
+}
+
+a:focus-visible {
+  outline: 2px solid var(--color-text-on-dark-primary);
+  outline-offset: 4px;
+}
+
+/* ============================================
+   BUTTONS
+   ============================================ */
+
+button {
+  font-family: var(--font-family-avalon);
+  font-size: var(--font-button-size);
+  font-weight: var(--font-weight-semibold);
+  text-transform: var(--font-button-text-transform);
+  line-height: var(--line-height-tight);
+  letter-spacing: var(--letter-spacing-wide);
+  border: none;
+  background: none;
+  cursor: pointer;
+  transition: opacity var(--transition-fast);
+}
+
+button:hover {
+  opacity: var(--opacity-80);
+}
+
+button:focus-visible {
+  outline: 2px solid var(--color-text-on-dark-primary);
+  outline-offset: 4px;
+}
+
+button:disabled {
+  cursor: not-allowed;
+  opacity: var(--opacity-40);
+}
+
+/* ============================================
+   IMAGES & MEDIA
+   ============================================ */
+
+img,
+svg,
+video {
+  max-width: 100%;
+  height: auto;
+  display: block;
+}
+
+svg {
+  fill: currentColor;
+}
+
+/* Prevent layout shift for images */
+img {
+  aspect-ratio: attr(width) / attr(height);
+}
+
+/* ============================================
+   LISTS
+   ============================================ */
+
+ul,
+ol {
+  list-style: none;
+}
+
+/* ============================================
+   SELECTION
+   ============================================ */
+
+::selection {
+  background-color: var(--color-info);
+  color: var(--color-bg-light);
+}
+
+::-moz-selection {
+  background-color: var(--color-info);
+  color: var(--color-bg-light);
+}
+/* ============================================
+   SCROLLBAR STYLING (webkit browsers)
+   ============================================ */
+
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--color-bg-dark);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--color-text-on-dark-muted);
+  border-radius: var(--radius-full);
+  transition: background var(--transition-fast);
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--color-text-on-dark-tertiary);
+}
+
+/* ============================================
+   UTILITY CLASSES
+   ============================================ */
+
+/* Text Colors */
+.text-primary {
+  color: var(--color-text-on-dark-primary);
+}
+
+.text-secondary {
+  color: var(--color-text-on-dark-secondary);
+}
+
+.text-tertiary {
+  color: var(--color-text-on-dark-tertiary);
+}
+
+.text-muted {
+  color: var(--color-text-on-dark-muted);
+}
+
+.text-disabled {
+  color: var(--color-text-on-dark-disabled);
+}
+
+/* Text Alignment */
+.text-left {
+  text-align: left;
+}
+
+.text-center {
+  text-align: center;
+}
+
+.text-right {
+  text-align: right;
+}
+
+/* Text Transform */
+.uppercase {
+  text-transform: uppercase;
+}
+
+.lowercase {
+  text-transform: lowercase;
+}
+
+.capitalize {
+  text-transform: capitalize;
+}
+
+/* Display */
+.block {
+  display: block;
+}
+
+.inline-block {
+  display: inline-block;
+}
+
+.flex {
+  display: flex;
+}
+
+.inline-flex {
+  display: inline-flex;
+}
+
+.grid {
+  display: grid;
+}
+
+.hidden {
+  display: none;
+}
+
+/* Flexbox Utilities */
+.flex-row {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: nowrap;
+}
+
+.flex-column {
+  display: flex;
+  flex-direction: column;
+  flex-wrap: nowrap;
+}
+
+.flex-wrap {
+  flex-wrap: wrap;
+}
+
+.flex-nowrap {
+  flex-wrap: nowrap;
+}
+
+.center{
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+}
+.start{
+  align-items: flex-start;
+  justify-content: flex-start;
+  text-align: flex-start;
+}
+.end{
+  align-items: flex-end;
+  justify-content: flex-end;
+  text-align: flex-end;
+}
+.items-start {
+  align-items: flex-start;
+}
+
+.items-center {
+  align-items: center;
+}
+
+.items-end {
+  align-items: flex-end;
+}
+
+.items-baseline {
+  align-items: baseline;
+}
+
+.items-stretch {
+  align-items: stretch;
+}
+
+.justify-start {
+  justify-content: flex-start;
+}
+
+.justify-center {
+  justify-content: center;
+}
+
+.justify-end {
+  justify-content: flex-end;
+}
+
+.justify-between {
+  align-items: center;
+  justify-content: space-between;
+}
+
+.justify-around {
+  justify-content: space-around;
+}
+
+.justify-evenly {
+  justify-content: space-evenly;
+}
+
+/* Spacing - Gap */
+.gap-0 { gap: var(--spacing-0); }
+.gap-1 { gap: var(--spacing-1); }
+.gap-2 { gap: var(--spacing-2); }
+.gap-3 { gap: var(--spacing-3); }
+.gap-4 { gap: var(--spacing-4); }
+.gap-5 { gap: var(--spacing-5); }
+.gap-6 { gap: var(--spacing-6); }
+.gap-8 { gap: var(--spacing-8); }
+.gap-10 { gap: var(--spacing-10); }
+.gap-12 { gap: var(--spacing-12); }
+.gap-16 { gap: var(--spacing-16); }
+.gap-20 { gap: var(--spacing-20); }
+.gap-24 { gap: var(--spacing-24); }
+
+/* Width & Height */
+.w-full {
+  width: 100%;
+}
+
+.w-screen {
+  width: 100vw;
+}
+.max-w{
+  width: max-content;
+}
+.h-full {
+  height: 100%;
+}
+
+.h-screen {
+  height: 100vh;
+}
+.min-h{
+  height: min-content;
+}
+.min-h-screen {
+  min-height: 100vh;
+}
+
+/* Opacity */
+.opacity-0 { opacity: var(--opacity-0); }
+.opacity-10 { opacity: var(--opacity-10); }
+.opacity-20 { opacity: var(--opacity-20); }
+.opacity-30 { opacity: var(--opacity-30); }
+.opacity-40 { opacity: var(--opacity-40); }
+.opacity-50 { opacity: var(--opacity-50); }
+.opacity-60 { opacity: var(--opacity-60); }
+.opacity-70 { opacity: var(--opacity-70); }
+.opacity-80 { opacity: var(--opacity-80); }
+.opacity-90 { opacity: var(--opacity-90); }
+.opacity-100 { opacity: var(--opacity-100); }
+
+/* Position */
+.relative {
+  position: relative;
+}
+
+.absolute {
+  position: absolute;
+}
+
+.fixed {
+  position: fixed;
+}
+
+.sticky {
+  position: sticky;
+}
+
+/* Container */
+.container {
+  width: 100%;
+  max-width: var(--container-xl);
+  margin-left: auto;
+  margin-right: auto;
+  padding-left: var(--spacing-6);
+  padding-right: var(--spacing-6);
+}
+
+.container-sm {
+  max-width: var(--container-sm);
+}
+
+.container-md {
+  max-width: var(--container-md);
+}
+
+.container-lg {
+  max-width: var(--container-lg);
+}
+
+.container-xl {
+  max-width: var(--container-xl);
+}
+
+.container-2xl {
+  max-width: var(--container-2xl);
+}
+
+/* ============================================
+   RESPONSIVE CONTAINER PADDING
+   ============================================ */
+
+@media (min-width: 640px) {
+  .container {
+    padding-left: var(--spacing-8);
+    padding-right: var(--spacing-8);
+  }
+}
+
+@media (min-width: 1024px) {
+  .container {
+    padding-left: var(--spacing-12);
+    padding-right: var(--spacing-12);
+  }
+}
+
+/* Screen reader only content */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border-width: 0;
+}
+
+/* ============================================
+   ANIMATIONS
+   ============================================ */
+
+@keyframes fadeIn {
+  from {
+    opacity: var(--opacity-0);
+  }
+  to {
+    opacity: var(--opacity-100);
+  }
+}
+
+@keyframes fadeOut {
+  from {
+    opacity: var(--opacity-100);
+  }
+  to {
+    opacity: var(--opacity-0);
+  }
+}
+
+@keyframes slideInUp {
+  from {
+    transform: translateY(20px);
+    opacity: var(--opacity-0);
+  }
+  to {
+    transform: translateY(0);
+    opacity: var(--opacity-100);
+  }
+}
+
+@keyframes slideInDown {
+  from {
+    transform: translateY(-20px);
+    opacity: var(--opacity-0);
+  }
+  to {
+    transform: translateY(0);
+    opacity: var(--opacity-100);
+  }
+}
+
+/* Animation utility classes */
+.animate-fade-in {
+  animation: fadeIn var(--transition-base) var(--transition-easing);
+}
+
+.animate-fade-out {
+  animation: fadeOut var(--transition-base) var(--transition-easing);
+}
+
+.animate-slide-in-up {
+  animation: slideInUp var(--transition-base) var(--transition-easing);
+}
+
+.animate-slide-in-down {
+  animation: slideInDown var(--transition-base) var(--transition-easing);
+}
+
+/* ============================================
+   PRINT STYLES
+   ============================================ */
+
+@media print {
+  *,
+  *::before,
+  *::after {
+    background: transparent !important;
+    color: #000 !important;
+    box-shadow: none !important;
+    text-shadow: none !important;
+  }
+
+  a,
+  a:visited {
+    text-decoration: underline;
+  }
+
+  img {
+    page-break-inside: avoid;
+  }
+
+  p,
+  h1,
+  h2,
+  h3 {
+    orphans: 3;
+    widows: 3;
+  }
+
+  h1,
+  h2,
+  h3 {
+    page-break-after: avoid;
+  }
+}
+.input-dark {
+  width: 100%;
+  padding: var(--spacing-4);
+  border-radius: var(--radius-full);
+  background: var(--color-bg-dark-secondary);
+  border: 1px solid var(--color-border-dark);
+  color: var(--color-text-on-dark-primary);
+}

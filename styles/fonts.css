@@ -1,0 +1,328 @@
+/* ============================================
+   FONT FACE DECLARATIONS
+   ============================================ */
+/*===============================
+  Avalon
+  ================================
+  */
+/* Extra Light - 200 */
+@font-face {
+  font-family: 'Avalon';
+  src: url('../assets/fonts/avalon/Avalon-ExtraLight.eot');
+  src: local('Avalon Extra Light'),
+       url('../assets/fonts/avalon/Avalon-ExtraLight.eot?#iefix') format('embedded-opentype'),
+       url('../assets/fonts/avalon/Avalon-ExtraLight.woff2') format('woff2'),
+       url('../assets/fonts/avalon/Avalon-ExtraLight.woff') format('woff'),
+       url('../assets/fonts/avalon/Avalon-ExtraLight.ttf') format('truetype');
+  font-weight: 200;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Avalon';
+  src: url('../assets/fonts/avalon/Avalon-ExtraLightObl.eot');
+  src: local('Avalon Extra Light Oblique'),
+       url('../assets/fonts/avalon/Avalon-ExtraLightObl.eot?#iefix') format('embedded-opentype'),
+       url('../assets/fonts/avalon/Avalon-ExtraLightObl.woff2') format('woff2'),
+       url('../assets/fonts/avalon/Avalon-ExtraLightObl.woff') format('woff'),
+       url('../assets/fonts/avalon/Avalon-ExtraLightObl.ttf') format('truetype');
+  font-weight: 200;
+  font-style: italic;
+  font-display: swap;
+}
+
+/* Book (Regular) - 400 */
+@font-face {
+  font-family: 'Avalon';
+  src: url('../assets/fonts/avalon/Avalon-Book.eot');
+  src: local('Avalon Book'),
+       url('../assets/fonts/avalon/Avalon-Book.eot?#iefix') format('embedded-opentype'),
+       url('../assets/fonts/avalon/Avalon-Book.woff2') format('woff2'),
+       url('../assets/fonts/avalon/Avalon-Book.woff') format('woff'),
+       url('../assets/fonts/avalon/Avalon-Book.ttf') format('truetype');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Avalon';
+  src: url('../assets/fonts/avalon/Avalon-BookOblique.eot');
+  src: local('Avalon Book Oblique'),
+       url('../assets/fonts/avalon/Avalon-BookOblique.eot?#iefix') format('embedded-opentype'),
+       url('../assets/fonts/avalon/Avalon-BookOblique.woff2') format('woff2'),
+       url('../assets/fonts/avalon/Avalon-BookOblique.woff') format('woff'),
+       url('../assets/fonts/avalon/Avalon-BookOblique.ttf') format('truetype');
+  font-weight: 400;
+  font-style: italic;
+  font-display: swap;
+}
+
+/* Medium - 500 */
+@font-face {
+  font-family: 'Avalon';
+  src: url('../assets/fonts/avalon/Avalon-Medium.eot');
+  src: local('Avalon Medium'),
+       url('../assets/fonts/avalon/Avalon-Medium.eot?#iefix') format('embedded-opentype'),
+       url('../assets/fonts/avalon/Avalon-Medium.woff2') format('woff2'),
+       url('../assets/fonts/avalon/Avalon-Medium.woff') format('woff'),
+       url('../assets/fonts/avalon/Avalon-Medium.ttf') format('truetype');
+  font-weight: 500;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Avalon';
+  src: url('../assets/fonts/avalon/Avalon-MediumOblique.eot');
+  src: local('Avalon Medium Oblique'),
+       url('../assets/fonts/avalon/Avalon-MediumOblique.eot?#iefix') format('embedded-opentype'),
+       url('../assets/fonts/avalon/Avalon-MediumOblique.woff2') format('woff2'),
+       url('../assets/fonts/avalon/Avalon-MediumOblique.woff') format('woff'),
+       url('../assets/fonts/avalon/Avalon-MediumOblique.ttf') format('truetype');
+  font-weight: 500;
+  font-style: italic;
+  font-display: swap;
+}
+
+/* Demi (Semi Bold) - 600 */
+@font-face {
+  font-family: 'Avalon';
+  src: url('../assets/fonts/avalon/Avalon-Demi.eot');
+  src: local('Avalon Demi'),
+       url('../assets/fonts/avalon/Avalon-Demi.eot?#iefix') format('embedded-opentype'),
+       url('../assets/fonts/avalon/Avalon-Demi.woff2') format('woff2'),
+       url('../assets/fonts/avalon/Avalon-Demi.woff') format('woff'),
+       url('../assets/fonts/avalon/Avalon-Demi.ttf') format('truetype');
+  font-weight: 600;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Avalon';
+  src: url('../assets/fonts/avalon/Avalon-DemiOblique.eot');
+  src: local('Avalon Demi Oblique'),
+       url('../assets/fonts/avalon/Avalon-DemiOblique.eot?#iefix') format('embedded-opentype'),
+       url('../assets/fonts/avalon/Avalon-DemiOblique.woff2') format('woff2'),
+       url('../assets/fonts/avalon/Avalon-DemiOblique.woff') format('woff'),
+       url('../assets/fonts/avalon/Avalon-DemiOblique.ttf') format('truetype');
+  font-weight: 600;
+  font-style: italic;
+  font-display: swap;
+}
+
+/* Bold - 700 */
+@font-face {
+  font-family: 'Avalon';
+  src: url('../assets/fonts/avalon/Avalon-Bold.eot');
+  src: local('Avalon Bold'),
+       url('../assets/fonts/avalon/Avalon-Bold.eot?#iefix') format('embedded-opentype'),
+       url('../assets/fonts/avalon/Avalon-Bold.woff2') format('woff2'),
+       url('../assets/fonts/avalon/Avalon-Bold.woff') format('woff'),
+       url('../assets/fonts/avalon/Avalon-Bold.ttf') format('truetype');
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Avalon';
+  src: url('../assets/fonts/avalon/Avalon-BoldOblique.eot');
+  src: local('Avalon Bold Oblique'),
+       url('../assets/fonts/avalon/Avalon-BoldOblique.eot?#iefix') format('embedded-opentype'),
+       url('../assets/fonts/avalon/Avalon-BoldOblique.woff2') format('woff2'),
+       url('../assets/fonts/avalon/Avalon-BoldOblique.woff') format('woff'),
+       url('../assets/fonts/avalon/Avalon-BoldOblique.ttf') format('truetype');
+  font-weight: 700;
+  font-style: italic;
+  font-display: swap;
+}
+
+/*===============================
+  Editorial New Serif
+  ================================ */
+
+/* Ultra Light - 200 */
+@font-face {
+  font-family: 'Editorial New';
+  src: url('../assets/fonts/editorial/EditorialNew-Ultralight.otf') format('opentype');
+  font-weight: 200;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Editorial New';
+  src: url('../assets/fonts/editorial/EditorialNew-UltralightItalic.otf') format('opentype');
+  font-weight: 200;
+  font-style: italic;
+  font-display: swap;
+}
+
+/* Regular - 400 */
+@font-face {
+  font-family: 'Editorial New';
+  src: url('../assets/fonts/editorial/EditorialNew-Regular.otf') format('opentype');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Editorial New';
+  src: url('../assets/fonts/editorial/EditorialNew-Italic.otf') format('opentype');
+  font-weight: 400;
+  font-style: italic;
+  font-display: swap;
+}
+
+/* Ultra Bold - 700 */
+@font-face {
+  font-family: 'Editorial New';
+  src: url('../assets/fonts/editorial/EditorialNew-Ultrabold.otf') format('opentype');
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Editorial New';
+  src: url('../assets/fonts/editorial/EditorialNew-UltraboldItalic.otf') format('opentype');
+  font-weight: 700;
+  font-style: italic;
+  font-display: swap;
+}
+
+/*===============================
+  SF Mono
+  ================================ */
+
+/* Light - 200 */
+@font-face {
+  font-family: 'SF Mono';
+  src: url('../assets/fonts/sfmono/SFMono-Light.otf') format('opentype');
+  font-weight: 200;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'SF Mono';
+  src: url('../assets/fonts/sfmono/SFMono-LightItalic.otf') format('opentype');
+  font-weight: 200;
+  font-style: italic;
+  font-display: swap;
+}
+
+/* Regular - 400 */
+@font-face {
+  font-family: 'SF Mono';
+  src: url('../assets/fonts/sfmono/SFMono-Regular.otf') format('opentype');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'SF Mono';
+  src: url('../assets/fonts/sfmono/SFMono-RegularItalic.otf') format('opentype');
+  font-weight: 400;
+  font-style: italic;
+  font-display: swap;
+}
+
+/* Medium - 500 */
+@font-face {
+  font-family: 'SF Mono';
+  src: url('../assets/fonts/sfmono/SFMono-Medium.otf') format('opentype');
+  font-weight: 500;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'SF Mono';
+  src: url('../assets/fonts/sfmono/SFMono-MediumItalic.otf') format('opentype');
+  font-weight: 500;
+  font-style: italic;
+  font-display: swap;
+}
+
+/* Semibold - 600 */
+@font-face {
+  font-family: 'SF Mono';
+  src: url('../assets/fonts/sfmono/SFMono-Semibold.otf') format('opentype');
+  font-weight: 600;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'SF Mono';
+  src: url('../assets/fonts/sfmono/SFMono-SemiboldItalic.otf') format('opentype');
+  font-weight: 600;
+  font-style: italic;
+  font-display: swap;
+}
+
+/* Bold - 700 */
+@font-face {
+  font-family: 'SF Mono';
+  src: url('../assets/fonts/sfmono/SFMono-Bold.otf') format('opentype');
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'SF Mono';
+  src: url('../assets/fonts/sfmono/SFMono-BoldItalic.otf') format('opentype');
+  font-weight: 700;
+  font-style: italic;
+  font-display: swap;
+}
+
+/* Heavy (Extra Bold) - 800 */
+@font-face {
+  font-family: 'SF Mono';
+  src: url('../assets/fonts/sfmono/SFMono-Heavy.otf') format('opentype');
+  font-weight: 800;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'SF Mono';
+  src: url('../assets/fonts/sfmono/SFMono-HeavyItalic.otf') format('opentype');
+  font-weight: 800;
+  font-style: italic;
+  font-display: swap;
+}
+
+/* ============================================
+   FONT WEIGHT REFERENCE
+   ============================================
+   
+   Avalon:
+   - 200: Extra Light
+   - 400: Book (Regular)
+   - 500: Medium
+   - 600: Demi (Semi Bold)
+   - 700: Bold
+   
+   Editorial New:
+   - 200: Ultra Light
+   - 400: Regular
+   - 700: Ultra Bold
+   
+   SF Mono:
+   - 200: Light
+   - 400: Regular
+   - 500: Medium
+   - 600: Semibold
+   - 700: Bold
+   - 800: Heavy
+   
+   ============================================ */

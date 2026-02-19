@@ -103,6 +103,7 @@ export default function Header({ user }: { user: HeaderUser | null }) {
               aria-haspopup="menu"
               aria-expanded={menuOpen}
               className="user-chip"
+              style={{ backgroundColor: "var(--color-brand-gray-300)" }}
               title={currentUser?.name || currentUser?.email || "Account"}
               >
               <Image src="/icons/user.svg" alt="User" width={20} height={20} />

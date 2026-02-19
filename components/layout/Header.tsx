@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import Image from "next/image";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { GoogleAuthProvider, getAuth, signInWithPopup } from "firebase/auth";
 import { app } from "@/lib/firebase/client";
 import { useRouter } from "next/navigation";
@@ -16,14 +16,15 @@ export type HeaderUser = {
 export default function Header({ user }: { user: HeaderUser | null }) {
   const [isLoggingIn, setIsLoggingIn] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
+  const [currentUser, setCurrentUser] = useState<HeaderUser | null>(user);
   const router = useRouter();
   const menuRef = useRef<HTMLDivElement | null>(null);
 
-  const isLoggedIn = !!user?.uid;
-  const userInitial = useMemo(() => {
-    const source = (user?.name || user?.email || "").trim();
-    return source ? source[0].toUpperCase() : "U";
-  }, [user?.name, user?.email]);
+  useEffect(() => {
+      setCurrentUser(user);
+    }, [user]);
+
+    const isLoggedIn = !!currentUser?.uid;
 
   useEffect(() => {
     function onPointerDown(e: MouseEvent) {
@@ -57,7 +58,11 @@ export default function Header({ user }: { user: HeaderUser | null }) {
         },
         body: JSON.stringify({ idToken }),
       });
-
+      setCurrentUser({
+        uid: result.user.uid,
+        name: result.user.displayName ?? "",
+        email: result.user.email ?? "",
+      });
       router.refresh();
     } catch (error) {
       console.error("Login failed:", error);
@@ -70,6 +75,7 @@ export default function Header({ user }: { user: HeaderUser | null }) {
     try {
       await fetch("/api/auth/logout", { method: "POST" });
       setMenuOpen(false);
+      setCurrentUser(null);
       router.refresh();
     } catch (error) {
       console.error("Logout failed:", error);
@@ -97,8 +103,8 @@ export default function Header({ user }: { user: HeaderUser | null }) {
               aria-haspopup="menu"
               aria-expanded={menuOpen}
               className="user-chip"
-              title={user?.name || user?.email || "Account"}
-            >
+              title={currentUser?.name || currentUser?.email || "Account"}
+              >
               <Image src="/icons/user.svg" alt="User" width={20} height={20} />
             </button>
 

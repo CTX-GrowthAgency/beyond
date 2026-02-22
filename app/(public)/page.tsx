@@ -55,10 +55,10 @@ export default async function HomePage() {
               gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))",
             }}
           >
-            {events.map((event) => (
+            {events.filter((e) => e.slug).map((event) => (
               <EventCard
                 key={event._id}
-                id={event.slug}
+                id={event.slug!}
                 title={event.title}
                 image={
                   event.displayPoster

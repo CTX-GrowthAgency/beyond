@@ -38,14 +38,14 @@ export default async function EventsPage() {
             gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))",
           }}
         >
-          {events.map((Event) => (
+          {events.filter((e) => e.slug).map((event) => (
             <EventCard
-              key={Event._id}
-              id={Event.slug}
-              title={Event.title}
+              key={event._id}
+              id={event.slug!}
+              title={event.title}
               image={
-                Event.displayPoster
-                  ? urlFor(Event.displayPoster).width(600).url()
+                event.displayPoster
+                  ? urlFor(event.displayPoster).width(600).url()
                   : "/placeholder.jpg"
               }
             />

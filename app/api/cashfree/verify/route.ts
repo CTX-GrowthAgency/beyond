@@ -10,9 +10,12 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Missing bookingId or orderId" }, { status: 400 });
     }
 
-    // ── Fetch order status from Cashfree ──────────────────────────────────────
-    const cfRes = await fetch(`https://sandbox.cashfree.com/pg/orders/${orderId}`, {
-      // ↑ change to https://api.cashfree.com for production
+    // ── Fetch order status from Cashfree (same env as orders/create) ───────────
+    const cfBaseUrl =
+      process.env.CASHFREE_ENV === "production"
+        ? "https://api.cashfree.com/pg/orders"
+        : "https://sandbox.cashfree.com/pg/orders";
+    const cfRes = await fetch(`${cfBaseUrl}/${orderId}`, {
       method: "GET",
       headers: {
         "Content-Type": "application/json",

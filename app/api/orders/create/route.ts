@@ -122,10 +122,15 @@ export async function POST(req: NextRequest) {
 
     if (!cfRes.ok || !cfData.payment_session_id) {
       const message = getCashfreeErrorMessage(cfData);
+      const isAuthError =
+        cfRes.status === 401 ||
+        /authentication failed|invalid credentials|unauthorized/i.test(String(message));
       console.error("Cashfree order creation failed:", cfRes.status, cfData);
       return NextResponse.json(
         {
-          error: "Payment gateway could not create order.",
+          error: isAuthError
+            ? "Payment gateway authentication failed. Use sandbox App ID and Secret with CASHFREE_ENV=sandbox, or production credentials with CASHFREE_ENV=production."
+            : "Payment gateway could not create order.",
           message,
           details: process.env.NODE_ENV === "development" ? cfData : undefined,
         },

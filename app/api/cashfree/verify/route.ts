@@ -1,6 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getFirestore, FieldValue } from "firebase-admin/firestore";
 import { getAdminApp } from "@/lib/firebase/admin";
+import { sendTicketEmail } from "@/lib/email/sendTicketEmail";
+
+getAdminApp();
 
 export async function POST(req: NextRequest) {
   try {
@@ -43,6 +46,7 @@ export async function POST(req: NextRequest) {
       await bookingRef.update({
         paymentStatus: "completed",
         paymentMethod: cfData.payment_method ?? null,
+        paymentReference: orderId,
         paidAt: FieldValue.serverTimestamp(),
         ticketStatus: "issued",
         updatedAt: FieldValue.serverTimestamp(),
@@ -58,6 +62,26 @@ export async function POST(req: NextRequest) {
           paymentStatus: "completed",
           updatedAt: FieldValue.serverTimestamp(),
         });
+
+      // ── Send ticket + invoice email if not already sent (e.g. by webhook) ─────
+      const toEmail = booking.billing?.email ?? (booking as any).email;
+      if (toEmail && !booking.ticketEmailSentAt) {
+        try {
+          const bookingForEmail = {
+            ...booking,
+            id: bookingId,
+            bookingId,
+            name: booking.billing?.legalName ?? (booking as any).name,
+          };
+          await sendTicketEmail({ to: toEmail, booking: bookingForEmail });
+          await bookingRef.update({
+            ticketEmailSentAt: FieldValue.serverTimestamp(),
+            updatedAt: FieldValue.serverTimestamp(),
+          });
+        } catch (err) {
+          console.error("[verify] sendTicketEmail failed:", err);
+        }
+      }
 
       return NextResponse.json({ status: "completed", bookingId });
     }

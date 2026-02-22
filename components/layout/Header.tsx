@@ -1,9 +1,8 @@
 "use client";
 
 import Link from "next/link";
-import Image from "next/image";
-import { useEffect, useRef, useState } from "react";
-import { GoogleAuthProvider, getAuth, signInWithPopup } from "firebase/auth";
+import Image from "next/image";import { useEffect, useRef, useState } from "react";
+import { GoogleAuthProvider, getAuth, onAuthStateChanged, signInWithPopup } from "firebase/auth";
 import { app } from "@/lib/firebase/client";
 import { useRouter } from "next/navigation";
 
@@ -21,10 +20,47 @@ export default function Header({ user }: { user: HeaderUser | null }) {
   const menuRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
-      setCurrentUser(user);
-    }, [user]);
+    setCurrentUser(user);
+  }, [user]);
 
-    const isLoggedIn = !!currentUser?.uid;
+  const isLoggedIn = !!currentUser?.uid;
+
+
+  useEffect(() => {
+    const auth = getAuth(app);
+
+    return onAuthStateChanged(auth, async (firebaseUser) => {
+      if (!firebaseUser) {
+        return;
+      }
+
+      setCurrentUser((existingUser) =>
+        existingUser ?? {
+          uid: firebaseUser.uid,
+          name: firebaseUser.displayName ?? "",
+          email: firebaseUser.email ?? "",
+        },
+      );
+
+      if (user?.uid) {
+        return;
+      }
+
+      try {
+        const idToken = await firebaseUser.getIdToken(true);
+        await fetch("/api/auth/login", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ idToken }),
+        });
+        router.refresh();
+      } catch (error) {
+        console.error("Session refresh failed:", error);
+      }
+    });
+  }, [router, user?.uid]);
 
   useEffect(() => {
     function onPointerDown(e: MouseEvent) {
@@ -51,13 +87,18 @@ export default function Header({ user }: { user: HeaderUser | null }) {
       const result = await signInWithPopup(auth, provider);
       const idToken = await result.user.getIdToken();
 
-      await fetch("/api/auth/login", {
+      const loginResponse = await fetch("/api/auth/login", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({ idToken }),
       });
+
+      if (!loginResponse.ok) {
+        throw new Error("Could not create server session");
+      }
+
       setCurrentUser({
         uid: result.user.uid,
         name: result.user.displayName ?? "",
@@ -74,8 +115,8 @@ export default function Header({ user }: { user: HeaderUser | null }) {
   async function handleLogout() {
     try {
       await fetch("/api/auth/logout", { method: "POST" });
-      setMenuOpen(false);
       setCurrentUser(null);
+      setMenuOpen(false);
       router.refresh();
     } catch (error) {
       console.error("Logout failed:", error);
@@ -91,6 +132,7 @@ export default function Header({ user }: { user: HeaderUser | null }) {
             alt="Beyond Logo"
             width={120}
             height={40}
+            style={{ width: 'auto', height: 'auto' }}
             priority
           />
         </Link>
@@ -103,10 +145,9 @@ export default function Header({ user }: { user: HeaderUser | null }) {
               aria-haspopup="menu"
               aria-expanded={menuOpen}
               className="user-chip"
-              style={{ backgroundColor: "var(--color-brand-gray-300)" }}
               title={currentUser?.name || currentUser?.email || "Account"}
-              >
-              <Image src="/icons/user.svg" alt="User" width={20} height={20} />
+            >
+              <Image src="/icons/user.svg" alt="User" width={20} height={20} style={{ width: 'auto', height: 'auto' }} />
             </button>
 
             {menuOpen ? (
@@ -117,10 +158,7 @@ export default function Header({ user }: { user: HeaderUser | null }) {
                 <button type="button" className="user-menu-item" onClick={() => { setMenuOpen(false); router.push("/bookings"); }}>
                   My Bookings
                 </button>
-                <button type="button" className="user-menu-item" onClick={() => { setMenuOpen(false); router.push("/organizer"); }}>
-                  Organizer
-                </button>
-                <div className="user-menu-sep" />
+                                <div className="user-menu-sep" />
                 <button type="button" className="user-menu-item" onClick={handleLogout}>
                   Logout
                 </button>

@@ -1,4 +1,4 @@
-# RUSH IN – Fastest Event Ticketing Platform
+# BEYOND – Fastest Event Ticketing Platform
 
 A modern, high-performance event ticketing application built with Next.js 16, React 19, and Tailwind CSS. Experience seamless ticket purchasing, QR code scanning, and instant event entry.
 
@@ -40,7 +40,7 @@ A modern, high-performance event ticketing application built with Next.js 16, Re
 ## 📁 Project Structure
 
 ```
-rush-in/
+beyond/
 ├── app/                          # Next.js App Router
 │   ├── (booking)/               # Ticket booking flow
 │   │   ├── checkout/            # Payment processing
@@ -109,7 +109,7 @@ rush-in/
 1. **Clone the repository**
    ```bash
    git clone <repository-url>
-   cd rush-in
+   cd beyond
    ```
 
 2. **Install dependencies**
@@ -199,7 +199,7 @@ If you see Turbopack/Dev errors like `os error 32` (file locked) under `.next`, 
 npx next dev --webpack
 ```
 
-- If it persists, move the repo out of OneDrive (e.g. `C:\Projects\rush-in`).
+- If it persists, move the repo out of OneDrive (e.g. `C:\Projects\beyond`).
 
 ## 🚀 Deployment
 
@@ -229,7 +229,7 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ## 🔗 Links
 
-- **Live Demo**: [https://rushin.app](https://rushin.app)
+- **Live Demo**: [https://beyond.app](https://beyond.app)
 - **Documentation**: [Next.js Documentation](https://nextjs.org/docs)
 - **Support**: Open an issue on GitHub
 

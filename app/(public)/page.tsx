@@ -1,30 +1,28 @@
 import EventCard from "@/components/event/EventCard";
 import SearchBar from "@/components/ui/SearchBar";
+import { sanityClient } from "@/lib/sanity/client";
+import { urlFor } from "@/lib/sanity/image";
+import { Event } from '../../type/event';
 
-const events = [
-  {
-    id: "gigi",
-    title: "Gigi",
-    image: "",
-  },
-  {
-    id: "artbat",
-    title: "Artbat",
-    image: "",
-  },
-  {
-    id: "masha-vincent",
-    title: "Masha Vincent",
-    image: "",
-  },
-];
+async function getFeaturedEvents(): Promise<Event[]> {
+  return sanityClient.fetch(`
+    *[_type == "event" && featured == true] 
+    | order(eventDate asc) {
+      _id,
+      title,
+      "slug": eventSlug.current,
+      displayPoster
+    }
+  `);
+}
 
-export default function HomePage() {
+export default async function HomePage() {
+  const events = await getFeaturedEvents();
+
   return (
     <section className="min-h-screen">
       <div className="container flex flex-column gap-20">
 
-        {/* HERO SECTION */}
         <div className="flex flex-column gap-8" style={{ maxWidth: "700px" }}>
           <h1 className="display-sans-serif-1 uppercase">
             Discover <br />
@@ -37,7 +35,6 @@ export default function HomePage() {
           </div>
         </div>
 
-        {/* FEATURED SECTION */}
         <div className="flex flex-column gap-8">
           <div className="flex flex-column gap-2">
             <span
@@ -59,7 +56,16 @@ export default function HomePage() {
             }}
           >
             {events.map((event) => (
-              <EventCard key={event.id} {...event} />
+              <EventCard
+                key={event._id}
+                id={event.slug}
+                title={event.title}
+                image={
+                  event.displayPoster
+                    ? urlFor(event.displayPoster).width(600).url()
+                    : "/placeholder.jpg"
+                }
+              />
             ))}
           </div>
         </div>

@@ -336,9 +336,15 @@ export default function CheckoutClient({
       if (!res.ok) {
         const raw = data?.message || data?.error || "Payment initialisation failed.";
         const isAuthError = /authentication failed|invalid credentials|unauthorized/i.test(String(raw));
-        const msg = isAuthError
-          ? "Payment gateway authentication failed. In .env.local use CASHFREE_ENV=sandbox with Cashfree SANDBOX App ID & Secret, or CASHFREE_ENV=production with PRODUCTION credentials. Restart the dev server after changing."
-          : raw;
+        const isHttpsError = /https|NEXT_PUBLIC_BASE_URL|production.*requires/i.test(String(raw));
+        let msg = raw;
+        if (isAuthError) {
+          msg =
+            "Payment gateway authentication failed. In .env.local use CASHFREE_ENV=sandbox with Cashfree SANDBOX App ID & Secret, or CASHFREE_ENV=production with PRODUCTION credentials. Restart the dev server after changing.";
+        } else if (isHttpsError) {
+          msg =
+            "Production Cashfree requires HTTPS. Set NEXT_PUBLIC_BASE_URL to an HTTPS URL (e.g. your live domain or https://xxx.ngrok.io for local testing).";
+        }
         alert(msg);
         return;
       }

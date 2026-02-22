@@ -43,6 +43,16 @@ export async function POST(req: NextRequest) {
         { status: 503 }
       );
     }
+    if (process.env.CASHFREE_ENV === "production" && !baseUrl.startsWith("https://")) {
+      return NextResponse.json(
+        {
+          error: "Production Cashfree requires HTTPS.",
+          message:
+            "NEXT_PUBLIC_BASE_URL must be https (e.g. https://yourdomain.com or https://xxx.ngrok.io for local testing).",
+        },
+        { status: 503 }
+      );
+    }
 
     let db;
     try {

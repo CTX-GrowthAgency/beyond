@@ -565,7 +565,7 @@ export default async function EventPage({
                         </div>
                         <div className="ev-detail-text">
                           <strong>{formatted.day}, {formatted.date}</strong>
-                          <span>{formatted.time} onwards</span>
+                          <strong>{formatted.time} onwards</strong>
                         </div>
                       </div>
                     )}

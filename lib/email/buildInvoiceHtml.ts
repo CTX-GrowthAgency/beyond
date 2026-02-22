@@ -45,7 +45,8 @@ export function buildInvoiceHtml(
   options?: { qrImageDataUrl?: string }
 ): string {
   const base = process.env.NEXT_PUBLIC_BASE_URL ?? "";
-  const qrSrc = options?.qrImageDataUrl ?? `${base}/api/qr/${booking.bookingId}`;
+  const qrApiUrl = base ? `${base}/api/qr/${booking.bookingId}` : "";
+  const qrSrc = qrApiUrl || options?.qrImageDataUrl || "";
   const grandTotal = booking.pricing?.grandTotal ?? 0;
   const subtotal = booking.pricing?.subtotal ?? grandTotal;
   const fee = booking.pricing?.convenienceFee ?? 0;

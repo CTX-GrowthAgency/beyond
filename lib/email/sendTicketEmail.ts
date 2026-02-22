@@ -23,7 +23,13 @@ export async function sendTicketEmail({
 
   // Generate QR Code
   const qrData = `${bookingId}|${eventTitle}`;
-  const qrImage = await QRCode.toDataURL(qrData);
+  const qrPngBuffer = await QRCode.toBuffer(qrData, {
+    type: "png",
+    width: 360,
+    margin: 1,
+    errorCorrectionLevel: "M",
+  });
+  const qrImageDataUrl = `data:image/png;base64,${qrPngBuffer.toString("base64")}`;
 
   // Create PDF ticket
   const pdfDoc = await PDFDocument.create();
@@ -41,8 +47,7 @@ export async function sendTicketEmail({
   page.drawText(`Name: ${displayName}`, { x: 50, y: 300, size: 14, font });
   page.drawText(`Booking ID: ${bookingId}`, { x: 50, y: 280, size: 14, font });
 
-  const qrImageBytes = await fetch(qrImage).then((res) => res.arrayBuffer());
-  const qrEmbedded = await pdfDoc.embedPng(qrImageBytes as ArrayBuffer);
+  const qrEmbedded = await pdfDoc.embedPng(qrPngBuffer);
 
   page.drawImage(qrEmbedded, {
     x: 400,
@@ -54,7 +59,7 @@ export async function sendTicketEmail({
   const pdfBytes = await pdfDoc.save();
 
   // Invoice HTML with embedded QR (data URL so it loads in email clients)
-  const html = buildInvoiceHtml(booking as BookingForEmail, { qrImageDataUrl: qrImage });
+  const html = buildInvoiceHtml(booking as BookingForEmail, { qrImageDataUrl: qrImageDataUrl });
 
   const from = process.env.EMAIL_FROM ?? "beyond@ctxgrowthagency.in";
 

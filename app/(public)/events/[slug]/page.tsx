@@ -1,8 +1,8 @@
 import { sanityClient } from "@/lib/sanity/client";
 import { urlFor } from "@/lib/sanity/image";
 import Image from "next/image";
-import Link from "next/link";
-import type { Event } from "@/type/event";
+import type { Event, Artist, TicketType } from "@/type/event";
+import ExpandableDescription from "@/components/event/ExpandableDescription";
 
 async function getEvent(slug: string): Promise<Event | null> {
   const query = `*[_type == "event" && eventSlug.current == $slug][0]{
@@ -74,7 +74,7 @@ export default async function EventPage({
 
     const formatted = event.eventDate ? formatEventDate(event.eventDate) : null;
     const lowestPrice = event.ticketTypes?.length
-      ? Math.min(...event.ticketTypes.map((t: any) => t.price))
+      ? Math.min(...event.ticketTypes.map((t: TicketType) => t.price))
       : null;
 
     return (
@@ -192,12 +192,45 @@ export default async function EventPage({
           }
 
           /* ── About ── */
+          .ev-about-wrapper {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: baseline;
+            gap: 6px;
+          }
           .ev-about-text {
             font-size: 16px;
             line-height: 1.75;
             color: rgba(240,237,230,0.72);
             font-weight: 300;
-            white-space: pre-wrap;
+            margin: 0;
+            flex: 1;
+            min-width: 0;
+          }
+          .ev-about-collapsed {
+            display: -webkit-box;
+            -webkit-line-clamp: 1;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+          }
+          .ev-about-expanded {
+            display: block;
+          }
+          .ev-see-more-btn {
+            background: none;
+            border: none;
+            padding: 0;
+            font-size: 14px;
+            font-weight: 500;
+            color: #c9b97a;
+            cursor: pointer;
+            flex-shrink: 0;
+            text-decoration: none;
+            transition: opacity 0.2s;
+          }
+          .ev-see-more-btn:hover {
+            opacity: 0.85;
+            text-decoration: underline;
           }
 
           /* ── Artists ── */
@@ -432,7 +465,7 @@ export default async function EventPage({
                 {event.description && (
                   <section>
                     <div className="ev-section-label">About the Event</div>
-                    <p className="ev-about-text">{event.description}</p>
+                    <ExpandableDescription text={event.description} />
                   </section>
                 )}
 
@@ -443,7 +476,7 @@ export default async function EventPage({
                     <section>
                       <div className="ev-section-label">Line-up</div>
                       <div className="ev-artists-grid">
-                        {event.artists?.map((artist: any, i: number) => (
+                        {event.artists?.map((artist: Artist, i: number) => (
                           <div key={i} className="ev-artist-card">
                             <div className="ev-artist-img-wrap">
                               {artist.image?.asset ? (
@@ -492,7 +525,7 @@ export default async function EventPage({
                     <section>
                       <div className="ev-section-label">Tickets</div>
                       <div className="ev-ticket-list">
-                        {event.ticketTypes?.map((ticket: any, i: number) => (
+                        {event.ticketTypes?.map((ticket: TicketType, i: number) => (
                           <div key={i} className="ev-ticket-row">
                             <div>
                               <div className="ev-ticket-type">{ticket.name}</div>
@@ -570,7 +603,7 @@ export default async function EventPage({
                         </div>
                         <div className="ev-detail-text">
                           <strong>{event.artists?.length ?? 0} Artist{(event.artists?.length ?? 0) > 1 ? "s" : ""}</strong>
-                          <span>{event.artists?.map((a: any) => a.name).join(", ")}</span>
+                          <span>{event.artists?.map((a: Artist) => a.name).join(", ")}</span>
                         </div>
                       </div>
                     )}

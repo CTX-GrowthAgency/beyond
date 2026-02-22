@@ -42,7 +42,12 @@ export interface Event {
 
   language?: string;
   duration?: string;
-  ageLimit?: string;
+  ticketsNeededFor?: string;
+  entryAllowedFor?: string;
+  layout?: string;
+  seatingArrangement?: string;
+  kidFriendly?: boolean;
+  petFriendly?: boolean;
 
   artists?: Artist[];
 

@@ -24,7 +24,15 @@ async function getEvent(slug: string): Promise<Event | null> {
         asset->
       }
     },
-    ticketTypes
+    ticketTypes,
+    language,
+    duration,
+    ticketsNeededFor,
+    entryAllowedFor,
+    layout,
+    seatingArrangement,
+    kidFriendly,
+    petFriendly
   }`;
 
   try {
@@ -231,6 +239,48 @@ export default async function EventPage({
           .ev-see-more-btn:hover {
             opacity: 0.85;
             text-decoration: underline;
+          }
+
+          /* ── Event Guide ── */
+          .ev-guide-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+            gap: 20px 32px;
+            margin-top: 4px;
+          }
+          .ev-guide-item {
+            display: flex;
+            gap: 12px;
+            align-items: flex-start;
+          }
+          .ev-guide-icon {
+            width: 28px;
+            height: 28px;
+            background: rgba(255,255,255,0.05);
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+          }
+          .ev-guide-icon svg {
+            opacity: 0.6;
+          }
+          .ev-guide-content {
+            min-width: 0;
+          }
+          .ev-guide-label {
+            font-size: 10px;
+            font-weight: 500;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+            color: rgba(240,237,230,0.4);
+            margin-bottom: 2px;
+          }
+          .ev-guide-value {
+            font-size: 14px;
+            font-weight: 500;
+            color: #f0ede6;
           }
 
           /* ── Artists ── */
@@ -469,6 +519,122 @@ export default async function EventPage({
                   </section>
                 )}
 
+                {/* Event Guide */}
+                {(event.language || event.duration || event.ticketsNeededFor || event.entryAllowedFor || event.layout || event.seatingArrangement || event.kidFriendly !== undefined || event.petFriendly !== undefined) && (
+                  <>
+                    <div className="ev-divider" />
+                    <section>
+                      <div className="ev-section-label">Event Guide</div>
+                      <div className="ev-guide-grid">
+                        {event.language && (
+                          <div className="ev-guide-item">
+                            <div className="ev-guide-icon">
+                              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
+                                <circle cx="12" cy="12" r="10" /><path d="M2 12h20M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z" />
+                              </svg>
+                            </div>
+                            <div className="ev-guide-content">
+                              <div className="ev-guide-label">Language</div>
+                              <div className="ev-guide-value">{event.language}</div>
+                            </div>
+                          </div>
+                        )}
+                        {event.duration && (
+                          <div className="ev-guide-item">
+                            <div className="ev-guide-icon">
+                              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
+                                <circle cx="12" cy="12" r="10" /><path d="M12 6v6l4 2" />
+                              </svg>
+                            </div>
+                            <div className="ev-guide-content">
+                              <div className="ev-guide-label">Duration</div>
+                              <div className="ev-guide-value">{event.duration}</div>
+                            </div>
+                          </div>
+                        )}
+                        {event.ticketsNeededFor && (
+                          <div className="ev-guide-item">
+                            <div className="ev-guide-icon">
+                              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
+                                <path d="M2 9a3 3 0 0 1 0 6v2a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-2a3 3 0 0 1 0-6V7a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2Z" /><path d="M13 5v2M13 17v2M13 11v2" />
+                              </svg>
+                            </div>
+                            <div className="ev-guide-content">
+                              <div className="ev-guide-label">Tickets Needed For</div>
+                              <div className="ev-guide-value">{event.ticketsNeededFor}</div>
+                            </div>
+                          </div>
+                        )}
+                        {event.entryAllowedFor && (
+                          <div className="ev-guide-item">
+                            <div className="ev-guide-icon">
+                              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
+                                <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" /><circle cx="9" cy="7" r="4" /><path d="M22 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75" />
+                              </svg>
+                            </div>
+                            <div className="ev-guide-content">
+                              <div className="ev-guide-label">Entry Allowed For</div>
+                              <div className="ev-guide-value">{event.entryAllowedFor}</div>
+                            </div>
+                          </div>
+                        )}
+                        {event.layout && (
+                          <div className="ev-guide-item">
+                            <div className="ev-guide-icon">
+                              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
+                                <rect x="3" y="3" width="7" height="7" rx="1" /><rect x="14" y="3" width="7" height="7" rx="1" /><rect x="3" y="14" width="7" height="7" rx="1" /><rect x="14" y="14" width="7" height="7" rx="1" />
+                              </svg>
+                            </div>
+                            <div className="ev-guide-content">
+                              <div className="ev-guide-label">Layout</div>
+                              <div className="ev-guide-value">{event.layout}</div>
+                            </div>
+                          </div>
+                        )}
+                        {event.seatingArrangement && (
+                          <div className="ev-guide-item">
+                            <div className="ev-guide-icon">
+                              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
+                                <path d="M4 18v3M4 14v2M4 10v2M4 6v2M20 18v3M20 14v2M20 10v2M20 6v2M4 6h16M4 18h16" />
+                              </svg>
+                            </div>
+                            <div className="ev-guide-content">
+                              <div className="ev-guide-label">Seating Arrangement</div>
+                              <div className="ev-guide-value">{event.seatingArrangement}</div>
+                            </div>
+                          </div>
+                        )}
+                        {event.kidFriendly !== undefined && (
+                          <div className="ev-guide-item">
+                            <div className="ev-guide-icon">
+                              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
+                                <path d="M9 12h6M9 16h6M12 2a4 4 0 0 0-4 4v2h8V6a4 4 0 0 0-4-4Z" /><path d="M4 22v-4a4 4 0 0 1 4-4h8a4 4 0 0 1 4 4v4" />
+                              </svg>
+                            </div>
+                            <div className="ev-guide-content">
+                              <div className="ev-guide-label">Kid Friendly?</div>
+                              <div className="ev-guide-value">{event.kidFriendly ? "Yes" : "No"}</div>
+                            </div>
+                          </div>
+                        )}
+                        {event.petFriendly !== undefined && (
+                          <div className="ev-guide-item">
+                            <div className="ev-guide-icon">
+                              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
+                                <circle cx="11" cy="11" r="2.5" /><path d="M7 20c-1.5 0-2.5-1.5-2.5-3S5.5 14 7 14" /><path d="M17 20c1.5 0 2.5-1.5 2.5-3S18.5 14 17 14" /><path d="M4 14c-1 0-1.5-1-1.5-2s.5-2 1.5-2" /><path d="M20 14c1 0 1.5-1 1.5-2s-.5-2-1.5-2" />
+                              </svg>
+                            </div>
+                            <div className="ev-guide-content">
+                              <div className="ev-guide-label">Pet Friendly?</div>
+                              <div className="ev-guide-value">{event.petFriendly ? "Yes" : "No"}</div>
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    </section>
+                  </>
+                )}
+
                 {/* Artists */}
                 {(event.artists?.length ?? 0) > 0 && (
                   <>
@@ -565,6 +731,17 @@ export default async function EventPage({
                         </div>
                         <div className="ev-detail-text">
                           <strong>{formatted.day}, {formatted.date}</strong>
+                        </div>
+                      </div>
+                    )}
+                    {formatted && (
+                      <div className="ev-detail-row">
+                        <div className="ev-detail-icon">
+                          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="rgba(240,237,230,0.5)" strokeWidth="1.8">
+                            <rect x="3" y="4" width="18" height="18" rx="2" /><line x1="16" y1="2" x2="16" y2="6" /><line x1="8" y1="2" x2="8" y2="6" /><line x1="3" y1="10" x2="21" y2="10" />
+                          </svg>
+                        </div>
+                        <div className="ev-detail-text">
                           <strong>{formatted.time} onwards</strong>
                         </div>
                       </div>
@@ -579,31 +756,6 @@ export default async function EventPage({
                         </div>
                         <div className="ev-detail-text">
                           <strong>{event.venueName}</strong>
-                          {event.venueAddress && <span>{event.venueAddress}</span>}
-                          {event.googleMapsLink && (
-                            <a
-                              href={event.googleMapsLink}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="ev-maps-link"
-                            >
-                              View on Maps →
-                            </a>
-                          )}
-                        </div>
-                      </div>
-                    )}
-
-                    {(event.artists?.length ?? 0) > 0 && (
-                      <div className="ev-detail-row">
-                        <div className="ev-detail-icon">
-                          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="rgba(240,237,230,0.5)" strokeWidth="1.8">
-                            <path d="M9 18V5l12-2v13" /><circle cx="6" cy="18" r="3" /><circle cx="18" cy="16" r="3" />
-                          </svg>
-                        </div>
-                        <div className="ev-detail-text">
-                          <strong>{event.artists?.length ?? 0} Artist{(event.artists?.length ?? 0) > 1 ? "s" : ""}</strong>
-                          <span>{event.artists?.map((a: Artist) => a.name).join(", ")}</span>
                         </div>
                       </div>
                     )}

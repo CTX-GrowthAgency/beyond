@@ -334,7 +334,11 @@ export default function CheckoutClient({
       const data = await res.json();
 
       if (!res.ok) {
-        const msg = data?.message || data?.error || "Payment initialisation failed.";
+        const raw = data?.message || data?.error || "Payment initialisation failed.";
+        const isAuthError = /authentication failed|invalid credentials|unauthorized/i.test(String(raw));
+        const msg = isAuthError
+          ? "Payment gateway authentication failed. In .env.local use CASHFREE_ENV=sandbox with Cashfree SANDBOX App ID & Secret, or CASHFREE_ENV=production with PRODUCTION credentials. Restart the dev server after changing."
+          : raw;
         alert(msg);
         return;
       }

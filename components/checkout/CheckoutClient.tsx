@@ -334,7 +334,7 @@ export default function CheckoutClient({
       const data = await res.json();
 
       if (!res.ok) {
-        const msg = data?.error || data?.details?.message || "Payment initialisation failed.";
+        const msg = data?.message || data?.error || "Payment initialisation failed.";
         alert(msg);
         return;
       }

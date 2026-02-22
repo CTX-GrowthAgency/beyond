@@ -2,7 +2,6 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
 import { getAuth, onAuthStateChanged } from "firebase/auth";
 import { getFirestore, doc, getDoc, Timestamp } from "firebase/firestore";
 import { app } from "@/lib/firebase/client";
@@ -44,13 +43,45 @@ interface BookingData {
   createdAt?: Timestamp;
 }
 
-export default function BookingDetail({ bookingId }: { bookingId: string }) {
-  const router = useRouter();
+type PaymentSuccessViewProps = {
+  bookingId?: string;
+  orderId?: string;
+};
+
+export default function PaymentSuccessView({
+  bookingId: bookingIdProp,
+  orderId,
+}: PaymentSuccessViewProps) {
+  const [bookingId, setBookingId] = useState<string | undefined>(bookingIdProp);
   const [booking, setBooking] = useState<BookingData | null>(null);
   const [loading, setLoading] = useState(true);
   const [uid, setUid] = useState<string | null>(null);
+  const [verifyDone, setVerifyDone] = useState(false);
+
+  // Call Cashfree verify when we have bookingId + orderId (redirect from payment)
+  useEffect(() => {
+    if (!bookingIdProp || !orderId || verifyDone) return;
+    setVerifyDone(true);
+    fetch("/api/cashfree/verify", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ bookingId: bookingIdProp, orderId }),
+    })
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.status === "completed" || data.bookingId) {
+          setBookingId(data.bookingId ?? bookingIdProp);
+        }
+      })
+      .catch((err) => console.error("[PaymentSuccess] verify failed:", err));
+  }, [bookingIdProp, orderId, verifyDone]);
 
   useEffect(() => {
+    const effectiveBookingId = bookingId ?? bookingIdProp;
+    if (!effectiveBookingId) {
+      setLoading(false);
+      return;
+    }
     const auth = getAuth(app);
     const unsub = onAuthStateChanged(auth, async (user) => {
       if (!user) {
@@ -60,7 +91,7 @@ export default function BookingDetail({ bookingId }: { bookingId: string }) {
       }
       setUid(user.uid);
       const db = getFirestore(app);
-      const snap = await getDoc(doc(db, "bookings", bookingId));
+      const snap = await getDoc(doc(db, "bookings", effectiveBookingId));
       if (!snap.exists()) {
         setBooking(null);
         setLoading(false);
@@ -76,7 +107,22 @@ export default function BookingDetail({ bookingId }: { bookingId: string }) {
       setLoading(false);
     });
     return () => unsub();
-  }, [bookingId]);
+  }, [bookingId, bookingIdProp]);
+
+  const effectiveBookingId = bookingId ?? bookingIdProp;
+  if (!effectiveBookingId) {
+    return (
+      <div className="container" style={{ paddingTop: "var(--spacing-12)", paddingBottom: "var(--spacing-12)" }}>
+        <p className="body-2 text-muted">No booking information in the URL.</p>
+        <p className="body-2 text-muted" style={{ marginTop: 8 }}>
+          If you just completed payment, your ticket and invoice have been sent to your email.
+        </p>
+        <Link href="/bookings" className="body-2" style={{ color: "var(--color-accent-primary)", marginTop: 12, display: "inline-block" }}>
+          ← My bookings
+        </Link>
+      </div>
+    );
+  }
 
   if (loading) {
     return (

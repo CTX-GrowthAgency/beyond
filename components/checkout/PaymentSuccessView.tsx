@@ -173,7 +173,9 @@ export default function PaymentSuccessView({
         <div style={{ background: "#fff", padding: 16, borderRadius: 12, display: "inline-block", marginTop: 4 }}>
           <BookingQR bookingId={booking.bookingId} size={220} />
         </div>
-        <p style={{ fontSize: 12, color: "var(--color-muted)", marginTop: 8 }}>Scan this QR at the venue to confirm entry</p>
+        <p style={{ fontSize: 12, color: "var(--color-muted)", marginTop: 8 }}>
+          Scan this QR at the venue to confirm entry. We recommend taking a screenshot and saving it on your phone.
+        </p>
       </section>
 
       {/* Tickets */}

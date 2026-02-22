@@ -125,7 +125,7 @@ export default function Header({ user }: { user: HeaderUser | null }) {
 
   return (
     <header className="w-full">
-      <div className="container flex justify-between items-center" style={{ paddingTop: "var(--spacing-6)", paddingBottom: "var(--spacing-6)" }}>
+      <div className="container flex justify-between items-center flex-wrap gap-4" style={{ paddingTop: "var(--spacing-6)", paddingBottom: "var(--spacing-6)" }}>
         <Link href="/" className="inline-flex items-center">
           <Image
             src="/logo.svg"
@@ -152,13 +152,10 @@ export default function Header({ user }: { user: HeaderUser | null }) {
 
             {menuOpen ? (
               <div className="user-menu" role="menu">
-                <button type="button" className="user-menu-item" onClick={() => { setMenuOpen(false); router.push("/profile"); }}>
-                  Profile
-                </button>
                 <button type="button" className="user-menu-item" onClick={() => { setMenuOpen(false); router.push("/bookings"); }}>
                   My Bookings
                 </button>
-                                <div className="user-menu-sep" />
+                <div className="user-menu-sep" />
                 <button type="button" className="user-menu-item" onClick={handleLogout}>
                   Logout
                 </button>

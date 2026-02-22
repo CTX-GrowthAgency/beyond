@@ -40,8 +40,12 @@ function fmtDate(dateStr: string) {
   }
 }
 
-export function buildInvoiceHtml(booking: BookingForEmail): string {
+export function buildInvoiceHtml(
+  booking: BookingForEmail,
+  options?: { qrImageDataUrl?: string }
+): string {
   const base = process.env.NEXT_PUBLIC_BASE_URL ?? "";
+  const qrSrc = options?.qrImageDataUrl ?? `${base}/api/qr/${booking.bookingId}`;
   const grandTotal = booking.pricing?.grandTotal ?? 0;
   const subtotal = booking.pricing?.subtotal ?? grandTotal;
   const fee = booking.pricing?.convenienceFee ?? 0;
@@ -123,7 +127,7 @@ export function buildInvoiceHtml(booking: BookingForEmail): string {
           </div>
           <div style="display:inline-block;background:#fff;padding:14px;border-radius:10px;margin-bottom:16px;">
             <img
-              src="${base}/api/qr/${booking.bookingId}"
+              src="${qrSrc}"
               alt="QR Code"
               width="180" height="180"
               style="display:block;"

@@ -1,4 +1,28 @@
-import Link from "next/link";
+import { sanityClient } from "@/lib/sanity/client";
+import CheckoutClient from "@/components/checkout/CheckoutClient";
+import { notFound, redirect } from "next/navigation";
+import { cookies } from "next/headers";
+
+interface TicketType {
+  name: string;
+  price: number;
+  description?: string;
+}
+
+async function getEventForCheckout(slug: string) {
+  const query = `*[_type == "event" && eventSlug.current == $slug][0]{
+    _id,
+    title,
+    eventDate,
+    venueName,
+    ticketTypes
+  }`;
+  try {
+    return await sanityClient.fetch(query, { slug });
+  } catch {
+    return null;
+  }
+}
 
 export default async function CheckoutPage({
   params,
@@ -10,41 +34,32 @@ export default async function CheckoutPage({
   const { slug } = await params;
   const query = await searchParams;
 
+  if (!slug) return notFound();
+
+  const event = await getEventForCheckout(slug);
+  if (!event) return notFound();
+
+  // Parse ticket selections from URL query params (?t0=2&t1=1 etc.)
+  const ticketSelections = (event.ticketTypes ?? []).map((t: TicketType, i: number) => {
+    const qty = parseInt(String(query[`t${i}`] ?? "0"), 10);
+    return {
+      name: t.name,
+      price: t.price ?? 0,
+      quantity: isNaN(qty) ? 0 : qty,
+    };
+  });
+
+  const hasTickets = ticketSelections.some((t: { quantity: number }) => t.quantity > 0);
+  if (!hasTickets) redirect(`/events/${slug}`);
+
   return (
-    <div className="container" style={{ paddingTop: "var(--spacing-12)", paddingBottom: "var(--spacing-12)" }}>
-      <div style={{ maxWidth: "600px", margin: "0 auto" }}>
-        <h1 style={{ fontSize: "1.75rem", marginBottom: "0.5rem" }}>Checkout</h1>
-        <p style={{ color: "var(--color-muted)", marginBottom: "var(--spacing-8)" }}>
-          Event: {slug}
-        </p>
-
-        <div
-          style={{
-            background: "var(--color-surface, #1a1a1a)",
-            border: "1px solid rgba(255,255,255,0.08)",
-            borderRadius: "8px",
-            padding: "var(--spacing-8)",
-            marginBottom: "var(--spacing-8)",
-          }}
-        >
-          <h2 style={{ fontSize: "1.125rem", marginBottom: "var(--spacing-4)" }}>Billing Details</h2>
-          <p style={{ color: "var(--color-muted)", fontSize: "0.9rem" }}>
-            Billing form will be implemented here. Selected tickets: {Object.keys(query).length > 0 ? Object.entries(query).map(([k, v]) => `${k}=${v}`).join(", ") : "none"}
-          </p>
-        </div>
-
-        <Link
-          href={`/events/${slug}`}
-          style={{
-            display: "inline-block",
-            color: "var(--color-accent-primary, #c9b97a)",
-            textDecoration: "none",
-            fontSize: "0.9rem",
-          }}
-        >
-          ← Back to event
-        </Link>
-      </div>
-    </div>
+    <CheckoutClient
+    slug={slug}
+    ticketSelections={ticketSelections}
+    eventTitle={event.title}
+    eventDate={event.eventDate ?? ""}
+    venueName={event.venueName ?? ""}
+    eventSanityId={event._id}
+  />
   );
 }

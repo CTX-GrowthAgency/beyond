@@ -85,7 +85,7 @@ export async function POST(req: NextRequest) {
             bookingId,
             name: booking.billing?.legalName ?? (booking as any).name,
           };
-          await sendTicketEmail({ to: toEmail, booking: bookingForEmail });
+          await sendTicketEmail({ to: toEmail, booking: bookingForEmail as any });
           await bookingRef.update({
             ticketEmailSentAt: FieldValue.serverTimestamp(),
             updatedAt: FieldValue.serverTimestamp(),

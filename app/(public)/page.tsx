@@ -1,5 +1,4 @@
 import EventCard from "@/components/event/EventCard";
-import SearchBar from "@/components/ui/SearchBar";
 import { sanityClient } from "@/lib/sanity/client";
 import { urlFor } from "@/lib/sanity/image";
 import { Event } from '../../type/event';
@@ -30,9 +29,7 @@ export default async function HomePage() {
             Experience
           </h1>
 
-          <div style={{ maxWidth: "500px" }}>
-            <SearchBar />
-          </div>
+          {/* Search hidden for now */}
         </div>
 
         <div className="flex flex-column gap-8">

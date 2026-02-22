@@ -1,5 +1,18 @@
+import Link from "next/link";
 
 export default function ContactPage() {
-  return <div>Contact</div>;
+  return (
+    <div className="container" style={{ paddingTop: "var(--spacing-12)", paddingBottom: "var(--spacing-12)" }}>
+      <h1 className="heading-1">Contact Us</h1>
+      <p className="body-2 text-muted" style={{ marginTop: 8 }}>
+        For support with your booking, please email{" "}
+        <a href="mailto:support@beyondgoa.com" style={{ color: "var(--color-accent-primary)" }}>
+          support@beyondgoa.com
+        </a>
+      </p>
+      <Link href="/" className="body-2" style={{ color: "var(--color-accent-primary)", marginTop: 16, display: "inline-block" }}>
+        ← Back to home
+      </Link>
+    </div>
+  );
 }
-

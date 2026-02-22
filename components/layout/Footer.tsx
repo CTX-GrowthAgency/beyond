@@ -7,7 +7,7 @@ export default function Footer() {
       <div className="container flex flex-column gap-10">
 
         {/* Top Section */}
-        <div className="flex justify-between items-center flex-wrap gap-6">
+        <div className="flex justify-between items-start sm:items-center flex-wrap gap-6">
 
           <Link href="/" className="inline-flex items-center">
             <Image
@@ -18,11 +18,10 @@ export default function Footer() {
             />
           </Link>
 
-          <nav className="flex gap-8 body-2 text-secondary">
-            <Link href="/terms">Terms & Conditions</Link>
+          <nav className="flex gap-6 flex-wrap body-2 text-secondary">
+            <Link href="/terms_and_conditions">Terms & Conditions</Link>
             <Link href="/privacy-policy">Privacy Policy</Link>
-            <Link href="/contact">Contact Us</Link>
-            <Link href="/list-your-event">List your events</Link>
+            <Link href="/disclaimer">Disclaimer</Link>
           </nav>
 
         </div>

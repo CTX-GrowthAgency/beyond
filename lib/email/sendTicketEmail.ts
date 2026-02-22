@@ -53,10 +53,10 @@ export async function sendTicketEmail({
 
   const pdfBytes = await pdfDoc.save();
 
-  // Invoice HTML (ticket confirmation + billing breakdown)
-  const html = buildInvoiceHtml(booking as BookingForEmail);
+  // Invoice HTML with embedded QR (data URL so it loads in email clients)
+  const html = buildInvoiceHtml(booking as BookingForEmail, { qrImageDataUrl: qrImage });
 
-  const from = process.env.EMAIL_FROM ?? "ctxgrowthagency@gmail.com";
+  const from = process.env.EMAIL_FROM ?? "beyond@ctxgrowthagency.in";
 
   await resend.emails.send({
     from,

@@ -85,15 +85,26 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // ── Create Cashfree order ID ──────────────────────────────────────────────
-    const cashfreeOrderId = `order_${bookingId}`;
-    const orderAmount = Number(amount);
-    if (!Number.isFinite(orderAmount) || orderAmount <= 0) {
+    // ── Only the booking owner can initiate payment ────────────────────────────
+    if (String(bookingData?.userId) !== String(customer.id)) {
       return NextResponse.json(
-        { error: "Invalid order amount" },
+        { error: "You can only pay for your own booking" },
+        { status: 403 }
+      );
+    }
+
+    // ── Use server-side amount from booking (prevent amount tampering) ─────────
+    const serverAmount = Number(bookingData?.pricing?.grandTotal);
+    if (!Number.isFinite(serverAmount) || serverAmount <= 0) {
+      return NextResponse.json(
+        { error: "Invalid booking total" },
         { status: 400 }
       );
     }
+    const orderAmount = serverAmount;
+
+    // ── Create Cashfree order ID ──────────────────────────────────────────────
+    const cashfreeOrderId = `order_${bookingId}`;
 
     const payload = {
       order_id: cashfreeOrderId,

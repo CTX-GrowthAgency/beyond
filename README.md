@@ -51,16 +51,65 @@ beyond/
 │   │   └── organizer/           # Organizer dashboard
 │   ├── (organizer)/             # Organizer-specific routes
 │   │   ├── dashboard/           # Main organizer dashboard
-│   │   ├── my-events/           # Event management
-│   │   ├── payout/              # Financial management
-│   │   └── scanner/             # QR code scanner
-│   ├── (public)/                # Public routes
-│   │   └── page.tsx             # Homepage
-│   ├── api/                     # API routes
-│   │   └── auth/                # Session login/logout routes
-│   ├── layout.tsx               # Root layout
-│   ├── error.tsx                # Error boundary
-│   └── not-found.tsx            # 404 page
+│   │   ├── my-events/          # Event management
+│   │   │   ├── create/        # Create new event
+│   │   │   └── [slug]/         # Edit event
+│   │   ├── payout/             # Payment management
+│   │   └── scanner/            # QR code scanner
+│   ├── (public)/                # Public pages
+│   │   ├── events/[slug]/       # Event detail pages
+│   │   ├── contact/             # Contact page
+│   │   ├── disclaimer/          # Legal disclaimer
+│   │   ├── list-your-events/    # Event submission (redirects to Google Form)
+│   │   ├── privacy-policy/      # Privacy policy
+│   │   └── terms_and_conditions/ # Terms & conditions
+│   ├── (user)/                 # User-specific pages
+│   │   ├── bookings/            # User booking history
+│   │   └── bookings/[bookingId]/ # Individual booking details
+│   ├── api/                    # API routes
+│   │   ├── auth/               # Authentication endpoints
+│   │   │   ├── login/         # Firebase login
+│   │   │   └── logout/        # Firebase logout
+│   │   ├── orders/             # Order management
+│   │   │   └── create/        # Create new order
+│   │   └── cashfree/           # Payment webhooks
+│   ├── components/              # Reusable components
+│   │   ├── event/              # Event-related components
+│   │   │   ├── EventCard.tsx  # Event card component
+│   │   │   └── EventList.tsx  # Event list component
+│   │   └── layout/             # Layout components
+│   │       ├── Header.tsx     # Site header with auth
+│   │       └── Footer.tsx     # Site footer
+│   ├── lib/                    # Utility libraries
+│   │   ├── firebase/            # Firebase configuration
+│   │   │   ├── client.ts      # Firebase client setup
+│   │   │   └── admin.ts       # Firebase admin setup
+│   │   ├── sanity/             # Sanity CMS integration
+│   │   │   ├── client.ts      # Sanity client configuration
+│   │   │   └── image.ts       # Image URL builder
+│   │   └── auth/               # Authentication utilities
+│   │       └── getUser.ts      # Get current user
+│   ├── public/                  # Static assets
+│   │   ├── icons/              # Icon assets
+│   │   └── images/             # Image assets
+│   ├── styles/                  # Global styles
+│   │   ├── global.css          # Global CSS
+│   │   ├── master.css          # Component styles
+│   │   ├── variables.css       # CSS variables
+│   │   └── fonts.css          # Font imports
+│   ├── type/                   # TypeScript type definitions
+│   │   ├── event.ts           # Event type interface
+│   │   ├── ticket.ts           # Ticket type interface
+│   │   └── user.ts             # User type interface
+│   └── types/                  # Additional types (if any)
+├── .env.local               # Environment variables
+├── .gitignore               # Git ignore file
+├── package.json             # Dependencies and scripts
+├── tsconfig.json            # TypeScript configuration
+├── next.config.ts          # Next.js configuration
+├── proxy.ts                # Request middleware
+└── README.md               # Project documentation
+```
 ├── components/                   # Reusable React components
 │   ├── event/                   # Event-related components
 │   │   ├── EventCard.tsx        # Event display card

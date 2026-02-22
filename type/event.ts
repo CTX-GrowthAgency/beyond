@@ -57,4 +57,6 @@ export interface Event {
     capacity: number;
     description?: string;
   }[];
+
+  termsAndConditions?: string;
 }

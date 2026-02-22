@@ -3,6 +3,7 @@ import { urlFor } from "@/lib/sanity/image";
 import Image from "next/image";
 import type { Event, Artist, TicketType } from "@/type/event";
 import ExpandableDescription from "@/components/event/ExpandableDescription";
+import EventSidebar from "@/components/event/EventSidebar";
 
 async function getEvent(slug: string): Promise<Event | null> {
   const query = `*[_type == "event" && eventSlug.current == $slug][0]{
@@ -32,7 +33,8 @@ async function getEvent(slug: string): Promise<Event | null> {
     layout,
     seatingArrangement,
     kidFriendly,
-    petFriendly
+    petFriendly,
+    termsAndConditions
   }`;
 
   try {
@@ -51,6 +53,13 @@ export async function generateStaticParams() {
     }
   `);
   return slugs.map((item) => ({ slug: item.slug }));
+}
+
+function getArtistLink(instagram: string | undefined): string | null {
+  if (!instagram?.trim()) return null;
+  const cleaned = instagram.trim();
+  if (cleaned.startsWith("http://") || cleaned.startsWith("https://")) return cleaned;
+  return `https://instagram.com/${cleaned.replace(/^@/, "")}`;
 }
 
 function formatEventDate(dateStr: string) {
@@ -322,6 +331,22 @@ export default async function EventPage({
             transform: translateY(-1px);
           }
 
+          /* ── Terms & Conditions ── */
+          .ev-terms-card {
+            background: rgba(255,255,255,0.03);
+            border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 8px;
+            padding: 24px;
+          }
+          .ev-terms-text {
+            font-size: 14px;
+            line-height: 1.7;
+            color: rgba(240,237,230,0.72);
+            font-weight: 300;
+            white-space: pre-wrap;
+            margin: 0;
+          }
+
           /* ── Artists ── */
           .ev-artists-grid {
             display: grid;
@@ -339,6 +364,11 @@ export default async function EventPage({
           .ev-artist-card:hover {
             border-color: rgba(201,185,122,0.3);
             transform: translateY(-2px);
+          }
+          .ev-artist-card.ev-artist-card-link {
+            text-decoration: none;
+            color: inherit;
+            cursor: pointer;
           }
           .ev-artist-img-wrap {
             position: relative;
@@ -360,17 +390,6 @@ export default async function EventPage({
             letter-spacing: 0.06em;
             text-transform: uppercase;
           }
-          .ev-artist-ig {
-            display: inline-flex;
-            align-items: center;
-            gap: 4px;
-            font-size: 11px;
-            color: #c9b97a;
-            text-decoration: none;
-            margin-top: 8px;
-            opacity: 0.8;
-          }
-          .ev-artist-ig:hover { opacity: 1; }
 
           /* ── Sidebar ── */
           .ev-sidebar-card {
@@ -489,6 +508,164 @@ export default async function EventPage({
             color: #c9b97a;
             letter-spacing: 0.05em;
             white-space: nowrap;
+          }
+
+          /* ── Book Tickets Dialog ── */
+          .ev-dialog-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.7);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            padding: 24px;
+          }
+          .ev-dialog {
+            background: #121212;
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 12px;
+            max-width: 440px;
+            width: 100%;
+            max-height: 90vh;
+            display: flex;
+            flex-direction: column;
+          }
+          .ev-dialog-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px 24px;
+            border-bottom: 1px solid rgba(255,255,255,0.08);
+          }
+          .ev-dialog-title {
+            font-family: 'Bebas Neue', sans-serif;
+            font-size: 24px;
+            letter-spacing: 0.05em;
+            color: #f0ede6;
+            margin: 0;
+          }
+          .ev-dialog-close {
+            background: none;
+            border: none;
+            color: rgba(240,237,230,0.6);
+            cursor: pointer;
+            padding: 4px;
+          }
+          .ev-dialog-close:hover { color: #f0ede6; }
+          .ev-dialog-body {
+            padding: 24px;
+            overflow-y: auto;
+            flex: 1;
+          }
+          .ev-dialog-empty {
+            color: rgba(240,237,230,0.5);
+            font-size: 14px;
+            margin: 0;
+          }
+          .ev-dialog-ticket-list {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+          }
+          .ev-dialog-ticket-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 16px;
+            background: rgba(255,255,255,0.03);
+            border: 1px solid rgba(255,255,255,0.07);
+            border-radius: 8px;
+          }
+          .ev-dialog-ticket-info { min-width: 0; }
+          .ev-dialog-ticket-name {
+            font-size: 15px;
+            font-weight: 600;
+            color: #f0ede6;
+          }
+          .ev-dialog-ticket-desc {
+            font-size: 12px;
+            color: rgba(240,237,230,0.45);
+            margin-top: 2px;
+          }
+          .ev-dialog-ticket-price {
+            font-family: 'Bebas Neue', sans-serif;
+            font-size: 18px;
+            color: #c9b97a;
+            margin-top: 4px;
+          }
+          .ev-dialog-ticket-controls {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+          }
+          .ev-dialog-counter-btn {
+            width: 36px;
+            height: 36px;
+            border-radius: 6px;
+            border: 1px solid rgba(255,255,255,0.15);
+            background: rgba(255,255,255,0.05);
+            color: #f0ede6;
+            font-size: 18px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+          }
+          .ev-dialog-counter-btn:hover:not(:disabled) {
+            background: rgba(255,255,255,0.1);
+            border-color: rgba(201,185,122,0.4);
+          }
+          .ev-dialog-counter-btn:disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
+          }
+          .ev-dialog-counter-value {
+            font-size: 16px;
+            font-weight: 600;
+            min-width: 24px;
+            text-align: center;
+          }
+          .ev-dialog-footer {
+            padding: 20px 24px;
+            border-top: 1px solid rgba(255,255,255,0.08);
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+          }
+          .ev-dialog-summary {
+            display: flex;
+            justify-content: space-between;
+            font-size: 14px;
+            color: rgba(240,237,230,0.7);
+          }
+          .ev-dialog-total {
+            font-family: 'Bebas Neue', sans-serif;
+            font-size: 22px;
+            color: #c9b97a;
+          }
+          .ev-dialog-book-btn {
+            width: 100%;
+            padding: 16px;
+            background: #c9b97a;
+            color: #080808;
+            font-weight: 600;
+            font-size: 13px;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background 0.2s, transform 0.15s;
+          }
+          .ev-dialog-book-btn:hover:not(:disabled) {
+            background: #ddd0a0;
+            transform: translateY(-1px);
+          }
+          .ev-dialog-book-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
           }
         `}</style>
 
@@ -718,43 +895,37 @@ export default async function EventPage({
                     <section>
                       <div className="ev-section-label">Line-up</div>
                       <div className="ev-artists-grid">
-                        {event.artists?.map((artist: Artist, i: number) => (
-                          <div key={i} className="ev-artist-card">
-                            <div className="ev-artist-img-wrap">
-                              {artist.image?.asset ? (
-                                <Image
-                                  src={urlFor(artist.image).width(320).url()}
-                                  alt={artist.name}
-                                  fill
-                                  style={{ objectFit: "cover" }}
-                                />
-                              ) : (
-                                <div style={{ width: "100%", height: "100%", background: "linear-gradient(135deg,#181818,#222)", display: "flex", alignItems: "center", justifyContent: "center" }}>
-                                  <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.15)" strokeWidth="1.5">
-                                    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" /><circle cx="12" cy="7" r="4" />
-                                  </svg>
-                                </div>
-                              )}
-                            </div>
-                            <div className="ev-artist-info">
-                              <p className="ev-artist-name">{artist.name}</p>
-                              {artist.role && <p className="ev-artist-role">{artist.role}</p>}
-                              {artist.instagram && (
-                                <a
-                                  href={`https://instagram.com/${artist.instagram.replace("@", "")}`}
-                                  target="_blank"
-                                  rel="noopener noreferrer"
-                                  className="ev-artist-ig"
-                                >
-                                  <svg width="11" height="11" viewBox="0 0 24 24" fill="currentColor">
-                                    <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zM12 0C8.741 0 8.333.014 7.053.072 2.695.272.273 2.69.073 7.052.014 8.333 0 8.741 0 12c0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98C8.333 23.986 8.741 24 12 24c3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98C15.668.014 15.259 0 12 0zm0 5.838a6.162 6.162 0 1 0 0 12.324 6.162 6.162 0 0 0 0-12.324zM12 16a4 4 0 1 1 0-8 4 4 0 0 1 0 8zm6.406-11.845a1.44 1.44 0 1 0 0 2.881 1.44 1.44 0 0 0 0-2.881z" />
-                                  </svg>
-                                  @{artist.instagram.replace("@", "")}
-                                </a>
-                              )}
-                            </div>
-                          </div>
-                        ))}
+                        {event.artists?.map((artist: Artist, i: number) => {
+                          const artistLink = getArtistLink(artist.instagram);
+                          const CardWrapper = artistLink ? "a" : "div";
+                          const wrapperProps = artistLink
+                            ? { href: artistLink, target: "_blank", rel: "noopener noreferrer", className: "ev-artist-card ev-artist-card-link" }
+                            : { className: "ev-artist-card" };
+                          return (
+                            <CardWrapper key={i} {...wrapperProps}>
+                              <div className="ev-artist-img-wrap">
+                                {artist.image?.asset ? (
+                                  <Image
+                                    src={urlFor(artist.image).width(320).url()}
+                                    alt={artist.name}
+                                    fill
+                                    style={{ objectFit: "cover" }}
+                                  />
+                                ) : (
+                                  <div style={{ width: "100%", height: "100%", background: "linear-gradient(135deg,#181818,#222)", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                                    <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.15)" strokeWidth="1.5">
+                                      <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" /><circle cx="12" cy="7" r="4" />
+                                    </svg>
+                                  </div>
+                                )}
+                              </div>
+                              <div className="ev-artist-info">
+                                <p className="ev-artist-name">{artist.name}</p>
+                                {artist.role && <p className="ev-artist-role">{artist.role}</p>}
+                              </div>
+                            </CardWrapper>
+                          );
+                        })}
                       </div>
                     </section>
                   </>
@@ -782,78 +953,34 @@ export default async function EventPage({
                     </section>
                   </>
                 )}
+
+                {/* Terms & Conditions */}
+                {event.termsAndConditions && (
+                  <>
+                    <div className="ev-divider" />
+                    <section>
+                      <div className="ev-section-label">Terms & Conditions</div>
+                      <div className="ev-terms-card">
+                        <p className="ev-terms-text">{event.termsAndConditions}</p>
+                      </div>
+                    </section>
+                  </>
+                )}
               </div>
 
               {/* SIDEBAR */}
-              <aside>
-                <div className="ev-sidebar-card">
-                  {lowestPrice && (
-                    <>
-                      <div className="ev-price-label">Starting from</div>
-                      <div className="ev-price">₹{lowestPrice.toLocaleString("en-IN")}</div>
-                    </>
-                  )}
-                  <a href="#tickets" className="ev-btn-primary">
-                    Book Tickets
-                  </a>
-
-                  <div className="ev-sidebar-details">
-                    {formatted && (
-                      <div className="ev-detail-row">
-                        <div className="ev-detail-icon">
-                          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="rgba(240,237,230,0.5)" strokeWidth="1.8">
-                            <rect x="3" y="4" width="18" height="18" rx="2" /><line x1="16" y1="2" x2="16" y2="6" /><line x1="8" y1="2" x2="8" y2="6" /><line x1="3" y1="10" x2="21" y2="10" />
-                          </svg>
-                        </div>
-                        <div className="ev-detail-text">
-                          <strong>{formatted.day}, {formatted.date}</strong>
-                        </div>
-                      </div>
-                    )}
-                    {formatted && (
-                      <div className="ev-detail-row">
-                        <div className="ev-detail-icon">
-                          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="rgba(240,237,230,0.5)" strokeWidth="1.8">
-                            <rect x="3" y="4" width="18" height="18" rx="2" /><line x1="16" y1="2" x2="16" y2="6" /><line x1="8" y1="2" x2="8" y2="6" /><line x1="3" y1="10" x2="21" y2="10" />
-                          </svg>
-                        </div>
-                        <div className="ev-detail-text">
-                          <strong>{formatted.time} onwards</strong>
-                        </div>
-                      </div>
-                    )}
-
-                    {event.venueName && (
-                      <div className="ev-detail-row">
-                        <div className="ev-detail-icon">
-                          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="rgba(240,237,230,0.5)" strokeWidth="1.8">
-                            <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z" /><circle cx="12" cy="9" r="2.5" />
-                          </svg>
-                        </div>
-                        <div className="ev-detail-text">
-                          <strong>{event.venueName}</strong>
-                          {(event.googleMapsLink || event.venueAddress) && (
-                            <a
-                              href={
-                                event.googleMapsLink
-                                  ? event.googleMapsLink
-                                  : `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(
-                                      [event.venueName, event.venueAddress].filter(Boolean).join(", ")
-                                    )}`
-                              }
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="ev-maps-link"
-                            >
-                              Get Directions →
-                            </a>
-                          )}
-                        </div>
-                      </div>
-                    )}
-                  </div>
-                </div>
-              </aside>
+              <EventSidebar
+                eventSlug={slug}
+                eventTitle={event.title}
+                lowestPrice={lowestPrice}
+                ticketTypes={event.ticketTypes ?? []}
+                formatted={formatted}
+                venueName={event.venueName}
+                venueAddress={event.venueAddress}
+                googleMapsLink={event.googleMapsLink}
+                artistsCount={event.artists?.length ?? 0}
+                artistsNames={event.artists?.map((a: Artist) => a.name).join(", ") ?? ""}
+              />
             </div>
           </div>
         </div>

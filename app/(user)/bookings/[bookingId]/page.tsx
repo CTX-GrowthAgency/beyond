@@ -1,9 +1,11 @@
+import BookingDetail from "@/components/bookings/BookingDetail";
 
-export default function BookingDetailsPage({
+export default async function BookingDetailsPage({
   params,
 }: {
-  params: { bookingId: string };
+  params: Promise<{ bookingId: string }>;
 }) {
-  return <div>Booking: {params.bookingId}</div>;
+  const { bookingId } = await params;
+  return <BookingDetail bookingId={bookingId} />;
 }
 

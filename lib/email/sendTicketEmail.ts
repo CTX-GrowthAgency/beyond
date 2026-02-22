@@ -56,7 +56,7 @@ export async function sendTicketEmail({
   // Invoice HTML (ticket confirmation + billing breakdown)
   const html = buildInvoiceHtml(booking as BookingForEmail);
 
-  const from = process.env.EMAIL_FROM ?? "Beyond Tickets <tickets@beyondgoa.com>";
+  const from = process.env.EMAIL_FROM ?? "ctxgrowthagency@gmail.com";
 
   await resend.emails.send({
     from,

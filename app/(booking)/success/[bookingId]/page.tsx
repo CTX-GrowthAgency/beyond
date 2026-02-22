@@ -1,3 +1,5 @@
-export default function SuccessPage({ params }: { params: { bookingId: string } }) {
-  return <div>Booking successful! ID: {params.bookingId}</div>;
+import PaymentSuccessView from "@/components/checkout/PaymentSuccessView";
+
+export default function PaymentSuccessPage() {
+  return <PaymentSuccessView />;
 }

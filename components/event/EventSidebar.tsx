@@ -98,30 +98,6 @@ export default function EventSidebar({
                 </div>
                 <div className="ev-detail-text">
                   <strong>{venueName}</strong>
-                  {venueMapsUrl && (
-                    <a
-                      href={venueMapsUrl}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="ev-maps-link"
-                    >
-                      Get Directions →
-                    </a>
-                  )}
-                </div>
-              </div>
-            )}
-
-            {artistsCount > 0 && (
-              <div className="ev-detail-row">
-                <div className="ev-detail-icon">
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="rgba(240,237,230,0.5)" strokeWidth="1.8">
-                    <path d="M9 18V5l12-2v13" /><circle cx="6" cy="18" r="3" /><circle cx="18" cy="16" r="3" />
-                  </svg>
-                </div>
-                <div className="ev-detail-text">
-                  <strong>{artistsCount} Artist{artistsCount > 1 ? "s" : ""}</strong>
-                  <span>{artistsNames}</span>
                 </div>
               </div>
             )}

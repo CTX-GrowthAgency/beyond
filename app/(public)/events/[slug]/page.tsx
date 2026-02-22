@@ -283,6 +283,45 @@ export default async function EventPage({
             color: #f0ede6;
           }
 
+          /* ── Venue ── */
+          .ev-venue-card {
+            background: rgba(255,255,255,0.03);
+            border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 8px;
+            padding: 24px;
+          }
+          .ev-venue-name {
+            font-size: 18px;
+            font-weight: 600;
+            color: #f0ede6;
+            margin: 0 0 8px;
+          }
+          .ev-venue-address {
+            font-size: 14px;
+            line-height: 1.6;
+            color: rgba(240,237,230,0.65);
+            margin-bottom: 16px;
+          }
+          .ev-directions-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: #c9b97a;
+            color: #080808;
+            font-weight: 600;
+            font-size: 13px;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            padding: 12px 20px;
+            border-radius: 4px;
+            text-decoration: none;
+            transition: background 0.2s, transform 0.15s;
+          }
+          .ev-directions-btn:hover {
+            background: #ddd0a0;
+            transform: translateY(-1px);
+          }
+
           /* ── Artists ── */
           .ev-artists-grid {
             display: grid;
@@ -635,6 +674,43 @@ export default async function EventPage({
                   </>
                 )}
 
+                {/* Venue */}
+                {(event.venueName || event.venueAddress) && (
+                  <>
+                    <div className="ev-divider" />
+                    <section>
+                      <div className="ev-section-label">Venue</div>
+                      <div className="ev-venue-card">
+                        {event.venueName && (
+                          <h3 className="ev-venue-name">{event.venueName}</h3>
+                        )}
+                        {event.venueAddress && (
+                          <p className="ev-venue-address">{event.venueAddress}</p>
+                        )}
+                        {(event.googleMapsLink || event.venueName || event.venueAddress) && (
+                          <a
+                            href={
+                              event.googleMapsLink
+                                ? event.googleMapsLink
+                                : `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(
+                                    [event.venueName, event.venueAddress].filter(Boolean).join(", ")
+                                  )}`
+                            }
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="ev-directions-btn"
+                          >
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                              <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" /><circle cx="12" cy="10" r="3" />
+                            </svg>
+                            Get Directions
+                          </a>
+                        )}
+                      </div>
+                    </section>
+                  </>
+                )}
+
                 {/* Artists */}
                 {(event.artists?.length ?? 0) > 0 && (
                   <>
@@ -756,6 +832,22 @@ export default async function EventPage({
                         </div>
                         <div className="ev-detail-text">
                           <strong>{event.venueName}</strong>
+                          {(event.googleMapsLink || event.venueAddress) && (
+                            <a
+                              href={
+                                event.googleMapsLink
+                                  ? event.googleMapsLink
+                                  : `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(
+                                      [event.venueName, event.venueAddress].filter(Boolean).join(", ")
+                                    )}`
+                              }
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="ev-maps-link"
+                            >
+                              Get Directions →
+                            </a>
+                          )}
                         </div>
                       </div>
                     )}

@@ -39,9 +39,21 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Booking not found" }, { status: 404 });
     }
 
+    // ── Bind order to this booking (prevent using another booking’s paid order) ─
+    const expectedOrderId = `order_${bookingId}`;
+    if (orderId !== expectedOrderId) {
+      return NextResponse.json(
+        { error: "Order does not match this booking" },
+        { status: 400 }
+      );
+    }
+
     const booking = bookingSnap.data()!;
 
     if (orderStatus === "PAID") {
+      if (booking.paymentStatus === "completed") {
+        return NextResponse.json({ status: "completed", bookingId });
+      }
       // ── Mark booking as completed ───────────────────────────────────────────
       await bookingRef.update({
         paymentStatus: "completed",

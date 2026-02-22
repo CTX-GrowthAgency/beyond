@@ -12,18 +12,25 @@ export async function POST(req: NextRequest) {
     const signature = req.headers.get("x-webhook-signature");
     const timestamp = req.headers.get("x-webhook-timestamp");
 
-    // ── Verify webhook signature ──────────────────────────────────────────────
-    if (signature && timestamp && process.env.CASHFREE_WEBHOOK_SECRET) {
+    // ── Verify webhook signature (required to prevent fake PAYMENT_SUCCESS) ─────
+    const webhookSecret = process.env.CASHFREE_WEBHOOK_SECRET;
+    if (webhookSecret) {
+      if (!signature || !timestamp) {
+        console.warn("Webhook missing signature or timestamp");
+        return NextResponse.json({ error: "Missing signature" }, { status: 401 });
+      }
       const signedPayload = `${timestamp}${rawBody}`;
       const expectedSig = crypto
-        .createHmac("sha256", process.env.CASHFREE_WEBHOOK_SECRET)
+        .createHmac("sha256", webhookSecret)
         .update(signedPayload)
         .digest("base64");
-
       if (expectedSig !== signature) {
         console.warn("Invalid webhook signature");
         return NextResponse.json({ error: "Invalid signature" }, { status: 401 });
       }
+    } else if (process.env.NODE_ENV === "production") {
+      console.warn("CASHFREE_WEBHOOK_SECRET not set in production");
+      return NextResponse.json({ error: "Webhook not configured" }, { status: 503 });
     }
 
     const event = JSON.parse(rawBody);
@@ -54,6 +61,10 @@ export async function POST(req: NextRequest) {
     const booking = bookingSnap.data()!;
 
     if (eventType === "PAYMENT_SUCCESS_WEBHOOK") {
+      // Idempotency: already completed → accept but skip update (avoid re-send)
+      if (booking.paymentStatus === "completed") {
+        return NextResponse.json({ received: true });
+      }
       await bookingRef.update({
         paymentStatus: "completed",
         paymentMethod: event.data?.payment?.payment_method ?? null,

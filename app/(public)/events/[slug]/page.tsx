@@ -1,10 +1,12 @@
 import { sanityClient } from "@/lib/sanity/client";
 import { urlFor } from "@/lib/sanity/image";
 import Image from "next/image";
+import type { Metadata } from "next";
 import type { Event, Artist, TicketType } from "@/type/event";
 import ExpandableDescription from "@/components/event/ExpandableDescription";
 import EventSidebar from "@/components/event/EventSidebar";
 import EventMobileStickyBar from "@/components/event/EventMobileStickyBar";
+
 async function getEvent(slug: string): Promise<Event | null> {
   const query = `*[_type == "event" && eventSlug.current == $slug][0]{
     _id,
@@ -53,6 +55,61 @@ export async function generateStaticParams() {
     }
   `);
   return slugs.map((item) => ({ slug: item.slug }));
+}
+
+export async function generateMetadata(
+  { params }: { params: Promise<{ slug: string }> }
+): Promise<Metadata> {
+  const { slug } = await params;
+  const event = await getEvent(slug);
+
+  if (!event) {
+    return {
+      title: "Event not found | Beyond",
+      description: "This event could not be found.",
+    };
+  }
+
+  const baseTitle = event.title ?? "Event";
+  const datePart = event.eventDate ? formatEventDate(event.eventDate).date : null;
+  const title = datePart ? `${baseTitle} | ${datePart}` : baseTitle;
+
+  const description =
+    event.description?.slice(0, 150).replace(/\s+\S*$/, "")?.replace(/\s+\S*$/, "") ??
+    `Book tickets for ${event.title} on Beyond.`;
+
+  const imageUrl = event.cover?.asset
+    ? urlFor(event.cover).width(1200).height(630).url()
+    : undefined;
+
+  return {
+    title,
+    description,
+    alternates: {
+      canonical: `/events/${slug}`,
+    },
+    openGraph: {
+      title,
+      description,
+      type: "website",
+      url: `/events/${slug}`,
+      images: imageUrl
+        ? [
+            {
+              url: imageUrl,
+              width: 1200,
+              height: 630,
+              alt: event.title,
+            },
+          ]
+        : undefined,
+    },
+    twitter: {
+      card: "summary_large_image",
+      title,
+      description,
+    },
+  };
 }
 
 function getArtistLink(instagram: string | undefined): string | null {
@@ -731,9 +788,10 @@ export default async function EventPage({
           <div className="ev-hero">
             {event.cover?.asset ? (
               <Image
-                src={urlFor(event.cover).width(1600).url()}
+                src={urlFor(event.cover).width(1200).url()}
                 alt={event.title}
                 fill
+                sizes="100vw"
                 className="ev-hero-img"
                 priority
               />
@@ -966,7 +1024,9 @@ export default async function EventPage({
                                     src={urlFor(artist.image).width(320).url()}
                                     alt={artist.name}
                                     fill
+                                    sizes="160px"
                                     style={{ objectFit: "cover" }}
+                                    loading="lazy"
                                   />
                                 ) : (
                                   <div style={{ width: "100%", height: "100%", background: "linear-gradient(135deg,#181818,#222)", display: "flex", alignItems: "center", justifyContent: "center" }}>

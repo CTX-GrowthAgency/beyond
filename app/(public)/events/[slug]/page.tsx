@@ -4,7 +4,6 @@ import Image from "next/image";
 import type { Event, Artist, TicketType } from "@/type/event";
 import ExpandableDescription from "@/components/event/ExpandableDescription";
 import EventSidebar from "@/components/event/EventSidebar";
-import EventMobileStickyBar from "@/components/event/EventMobileStickyBar";
 
 async function getEvent(slug: string): Promise<Event | null> {
   const query = `*[_type == "event" && eventSlug.current == $slug][0]{
@@ -64,11 +63,31 @@ function getArtistLink(instagram: string | undefined): string | null {
 }
 
 function formatEventDate(dateStr: string) {
-  const date = new Date(dateStr);
+  // Strip timezone offset so the date is treated as local/wall-clock time,
+  // exactly as entered in Sanity — prevents IST shift turning 10:00 into 04:30.
+  // e.g. "2026-03-15T10:00:00.000Z" → "2026-03-15T10:00:00"
+  const localStr = dateStr.replace(/Z$/, "").replace(/([+-]\d{2}:\d{2})$/, "");
+  const date = new Date(localStr);
+
+  const days = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+  const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun",
+                  "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+
+  const day   = days[date.getDay()];
+  const dd    = String(date.getDate()).padStart(2, "0");
+  const mon   = months[date.getMonth()];
+  const yyyy  = date.getFullYear();
+
+  let hours   = date.getHours();
+  const mins  = String(date.getMinutes()).padStart(2, "0");
+  const ampm  = hours >= 12 ? "PM" : "AM";
+  hours       = hours % 12 || 12;
+  const time  = `${String(hours).padStart(2, "0")}:${mins} ${ampm}`;
+
   return {
-    day: date.toLocaleDateString("en-IN", { weekday: "short" }),
-    date: date.toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" }),
-    time: date.toLocaleTimeString("en-IN", { hour: "2-digit", minute: "2-digit", hour12: true }),
+    day,
+    date: `${dd} ${mon} ${yyyy}`,
+    time,
   };
 }
 
@@ -209,6 +228,8 @@ export default async function EventPage({
               gap: 0;
               padding-top: 0;
             }
+            /* Sidebar hidden — sidebar info shown in facts strip below hero */
+            .ev-sidebar-col { display: none; }
           }
 
           /* ─── Section furniture ─────────────────────────────────────── */
@@ -453,8 +474,7 @@ export default async function EventPage({
               padding: 12px clamp(16px, 4vw, 28px);
               /* respect iOS home indicator */
               padding-bottom: max(12px, env(safe-area-inset-bottom));
-              z-index: 9000;
-              pointer-events: auto;
+              z-index: 200;
             }
           }
           .ev-sticky-price-label {
@@ -474,21 +494,19 @@ export default async function EventPage({
             border-radius: 4px; border: none; cursor: pointer; text-decoration: none;
             transition: background 0.2s;
             -webkit-tap-highlight-color: transparent;
-            touch-action: manipulation;
           }
           .ev-sticky-cta:hover  { background: #ddd0a0; }
           .ev-sticky-cta:active { transform: scale(0.98); }
 
           /* ─── Dialog ────────────────────────────────────────────────── */
           .ev-dialog-overlay {
-            overflow-y: auto;
             position: fixed; inset: 0;
             background: rgba(0,0,0,0.7);
             display: flex;
             /* bottom sheet on mobile */
             align-items: flex-end;
             justify-content: center;
-            z-index: 10000;
+            z-index: 1000;
           }
           @media (min-width: 480px) {
             .ev-dialog-overlay { align-items: center; padding: 24px; }
@@ -956,12 +974,18 @@ export default async function EventPage({
             </div>
           </div>
 
-          <EventMobileStickyBar
-            eventSlug={slug}
-            eventTitle={event.title}
-            lowestPrice={lowestPrice}
-            ticketTypes={event.ticketTypes ?? []}
-          />
+          {/* ── MOBILE STICKY CTA BAR ── */}
+          <div className="ev-sticky-bar">
+            <div>
+              <div className="ev-sticky-price-label">From</div>
+              <div className="ev-sticky-price">
+                {lowestPrice ? `₹${lowestPrice.toLocaleString("en-IN")}` : "Free"}
+              </div>
+            </div>
+            <a href={`/checkout/${slug}`} className="ev-sticky-cta">
+              Book Tickets
+            </a>
+          </div>
 
         </div>
       </>

@@ -6,6 +6,7 @@ import { cookies } from "next/headers";
 interface TicketType {
   name: string;
   price: number;
+  capacity?: number;
   description?: string;
 }
 
@@ -54,12 +55,13 @@ export default async function CheckoutPage({
 
   return (
     <CheckoutClient
-    slug={slug}
-    ticketSelections={ticketSelections}
-    eventTitle={event.title}
-    eventDate={event.eventDate ?? ""}
-    venueName={event.venueName ?? ""}
-    eventSanityId={event._id}
-  />
+      slug={slug}
+      ticketSelections={ticketSelections}
+      eventTicketTypes={event.ticketTypes ?? []}
+      eventTitle={event.title}
+      eventDate={event.eventDate ?? ""}
+      venueName={event.venueName ?? ""}
+      eventSanityId={event._id}
+    />
   );
 }

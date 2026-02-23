@@ -59,18 +59,36 @@ export async function POST(req: NextRequest) {
     const booking = bookingSnap.data()!;
 
     if (booking.paymentStatus === "completed") {
-      const toEmail = booking.billing?.email ?? booking.email;
-      if (toEmail && !booking.ticketEmailSentAt) {
+      const userRef = db.collection("users").doc(String(booking.userId));
+      const userSnap = await userRef.get();
+      const toEmail = userSnap.exists ? (userSnap.data() as any).email : undefined;
+
+      const eventRef = db.collection("events").doc(String(booking.eventId));
+      const eventSnap = await eventRef.get();
+      const eventData = eventSnap.exists ? (eventSnap.data() as any) : {};
+
+      if (toEmail && !booking.notificationSentAt) {
         try {
           const bookingForEmail = {
             ...booking,
+            eventTitle: eventData.title,
+            eventDate: eventData.eventDate?.toDate ? eventData.eventDate.toDate().toISOString() : undefined,
+            venueName: eventData.venueName,
             id: bookingId,
             bookingId,
-            name: booking.billing?.legalName ?? booking.name,
+            name: (userSnap.exists ? (userSnap.data() as any).name : undefined) ?? "Guest",
+            billing: {
+              legalName: (userSnap.exists ? (userSnap.data() as any).name : undefined) ?? "Guest",
+              email: toEmail,
+              whatsapp: userSnap.exists ? (userSnap.data() as any).phone : undefined,
+              nationality: userSnap.exists ? (userSnap.data() as any).nationality : undefined,
+              residency: "indian",
+              state: userSnap.exists ? (userSnap.data() as any).state : undefined,
+            },
           };
           await sendTicketEmail({ to: toEmail, booking: bookingForEmail as any });
           await bookingRef.update({
-            ticketEmailSentAt: FieldValue.serverTimestamp(),
+            notificationSentAt: FieldValue.serverTimestamp(),
             updatedAt: FieldValue.serverTimestamp(),
           });
         } catch (err) {
@@ -86,36 +104,47 @@ export async function POST(req: NextRequest) {
       await bookingRef.update({
         paymentStatus: "completed",
         paymentMethod: (cfData as any).payment_method ?? null,
+        cashfreeOrderId: orderId,
         paymentReference: orderId,
         paidAt: FieldValue.serverTimestamp(),
+        verifiedAt: FieldValue.serverTimestamp(),
         ticketStatus: "issued",
         updatedAt: FieldValue.serverTimestamp(),
       });
 
-      // ── Mirror status on event subcollection ─────────────────────────────────
-      await db
-        .collection("events")
-        .doc(booking.eventId)
-        .collection("bookings")
-        .doc(bookingId)
-        .update({
-          paymentStatus: "completed",
-          updatedAt: FieldValue.serverTimestamp(),
-        });
-
       // ── Send ticket email ───────────────────────────────────────────────────
-      const toEmail = booking.billing?.email ?? booking.email;
-      if (toEmail && !booking.ticketEmailSentAt) {
+      const userRef = db.collection("users").doc(String(booking.userId));
+      const userSnap = await userRef.get();
+      const toEmail = userSnap.exists ? (userSnap.data() as any).email : undefined;
+
+      const eventRef = db.collection("events").doc(String(booking.eventId));
+      const eventSnap = await eventRef.get();
+      const eventData = eventSnap.exists ? (eventSnap.data() as any) : {};
+
+      if (toEmail && !booking.notificationSentAt) {
         try {
           const bookingForEmail = {
             ...booking,
+            eventTitle: eventData.title,
+            eventDate: eventData.eventDate?.toDate
+              ? eventData.eventDate.toDate().toISOString()
+              : undefined,
+            venueName: eventData.venueName,
             id: bookingId,
             bookingId,
-            name: booking.billing?.legalName ?? booking.name,
+            name: (userSnap.exists ? (userSnap.data() as any).name : undefined) ?? "Guest",
+            billing: {
+              legalName: (userSnap.exists ? (userSnap.data() as any).name : undefined) ?? "Guest",
+              email: toEmail,
+              whatsapp: userSnap.exists ? (userSnap.data() as any).phone : undefined,
+              nationality: userSnap.exists ? (userSnap.data() as any).nationality : undefined,
+              residency: "indian",
+              state: userSnap.exists ? (userSnap.data() as any).state : undefined,
+            },
           };
           await sendTicketEmail({ to: toEmail, booking: bookingForEmail as any });
           await bookingRef.update({
-            ticketEmailSentAt: FieldValue.serverTimestamp(),
+            notificationSentAt: FieldValue.serverTimestamp(),
             updatedAt: FieldValue.serverTimestamp(),
           });
         } catch (err) {
@@ -129,18 +158,9 @@ export async function POST(req: NextRequest) {
     if (orderStatus === "EXPIRED" || orderStatus === "CANCELLED") {
       await bookingRef.update({
         paymentStatus: "failed",
+        verifiedAt: FieldValue.serverTimestamp(),
         updatedAt: FieldValue.serverTimestamp(),
       });
-
-      await db
-        .collection("events")
-        .doc(booking.eventId)
-        .collection("bookings")
-        .doc(bookingId)
-        .update({
-          paymentStatus: "failed",
-          updatedAt: FieldValue.serverTimestamp(),
-        });
 
       return NextResponse.json({ status: "failed", bookingId });
     }

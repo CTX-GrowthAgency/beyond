@@ -10,6 +10,7 @@ import {
   setDoc,
   getDoc,
   serverTimestamp,
+  Timestamp,
   collection,
 } from "firebase/firestore";
 import { app } from "@/lib/firebase/client";
@@ -22,9 +23,10 @@ interface TicketSelection {
   quantity: number;
 }
 
-interface CheckoutClientProps {
+export interface CheckoutClientProps {
   slug: string;
   ticketSelections: TicketSelection[];
+  eventTicketTypes: { price: number; capacity?: number; name?: string; description?: string }[];
   eventTitle: string;
   eventDate: string;
   venueName: string;
@@ -82,6 +84,7 @@ function isFormComplete(form: {
 export default function CheckoutClient({
   slug,
   ticketSelections,
+  eventTicketTypes,
   eventTitle,
   eventDate,
   venueName,
@@ -169,16 +172,18 @@ export default function CheckoutClient({
       const db = getFirestore(app);
 
       // 1. Upsert user — only profile fields, no event data
+      const userRef = doc(db, "users", userId);
+      const userSnap = await getDoc(userRef);
       await setDoc(
-        doc(db, "users", userId),
+        userRef,
         {
           uid: userId,
           email: userEmail,
-          legalName: form.legalName,
-          whatsapp: form.whatsapp,
+          name: form.legalName,
+          phone: form.whatsapp,
           nationality: form.nationality,
-          residency: form.residency,
           state: form.residency === "indian" ? form.state : null,
+          ...(userSnap.exists() ? {} : { createdAt: serverTimestamp() }),
           updatedAt: serverTimestamp(),
         },
         { merge: true }
@@ -193,9 +198,15 @@ export default function CheckoutClient({
           sanityId: eventSanityId,
           slug,
           title: eventTitle,
-          eventDate,
+          eventDate: eventDate ? Timestamp.fromDate(new Date(eventDate)) : null,
           venueName,
+          status: "active",
+          ticketTypes: (eventTicketTypes ?? []).map((t) => ({
+            price: Number(t.price ?? 0),
+            totalInventory: Number(t.capacity ?? 0),
+          })),
           createdAt: serverTimestamp(),
+          updatedAt: serverTimestamp(),
         });
       }
 
@@ -208,34 +219,19 @@ export default function CheckoutClient({
 
         // References
         userId,
-        eventId: eventSanityId,   // FK → events/{eventSanityId}
+        eventId: eventSanityId,
         eventSlug: slug,
-
-        // Event snapshot (denormalised — survives Sanity edits)
-        eventTitle,
-        eventDate,
-        venueName,
 
         // Ticket breakdown
         tickets: ticketSelections
           .filter((t) => t.quantity > 0)
           .map((t) => ({
+            ticketType: t.name,
             name: t.name,
             price: t.price,
             quantity: t.quantity,
             lineTotal: t.price * t.quantity,
           })),
-        totalTickets,
-
-        // Billing snapshot
-        billing: {
-          legalName: form.legalName,
-          email: userEmail,
-          whatsapp: form.whatsapp,
-          nationality: form.nationality,
-          residency: form.residency,
-          state: form.residency === "indian" ? form.state : null,
-        },
 
         // Pricing
         pricing: {
@@ -245,38 +241,23 @@ export default function CheckoutClient({
           grandTotal,
         },
 
-        // Agreements
-        acceptedTerms: form.acceptTerms,
-        acceptedPrivacy: form.acceptPrivacy,
-        acceptedDisclaimer: form.acceptDisclaimer,
-
         // Payment lifecycle: pending_payment → completed | failed
         paymentStatus: "pending_payment",
+        cashfreeOrderId: "",
         paymentMethod: null,      // filled after gateway callback
         paymentReference: null,   // Cashfree order_id
-        cashfreeOrderId: null,    // Cashfree order_id
         paidAt: null,
 
-        // Ticket lifecycle: pending → issued → cancelled
+        verifiedAt: null,
+        notificationSentAt: null,
+        expiresAt: Timestamp.fromMillis(Date.now() + 10 * 60 * 1000),
+
+        // Ticket lifecycle: pending → issued → used → cancelled
         ticketStatus: "pending",
-        qrIssued: false,
 
         createdAt: serverTimestamp(),
         updatedAt: serverTimestamp(),
       });
-
-      // 4. Lightweight reference on the event document
-      await setDoc(
-        doc(db, "events", eventSanityId, "bookings", newBookingId),
-        {
-          bookingId: newBookingId,
-          userId,
-          totalTickets,
-          grandTotal,
-          paymentStatus: "pending_payment",
-          createdAt: serverTimestamp(),
-        }
-      );
 
       setBookingId(newBookingId);
       setSubmitted(true);
@@ -326,7 +307,7 @@ export default function CheckoutClient({
           customer: {
             id: userId,
             email: userEmail,
-            phone: form.whatsapp,
+            phone: form.whatsapp.replace(/\s/g, ""),
           },
         }),
       });
@@ -456,8 +437,15 @@ export default function CheckoutClient({
       align-items: start;
     }
     @media (max-width: 860px) {
-      .ck-body { grid-template-columns: 1fr; }
-      .ck-sidebar { order: -1; }
+      .ck-body {
+        grid-template-columns: 1fr;
+        padding: 24px clamp(16px,4vw,24px) 32px;
+      }
+      .ck-sidebar {
+        order: 2;
+        position: static;
+        top: auto;
+      }
     }
 
     /* ── Section card ── */

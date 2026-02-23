@@ -17,20 +17,9 @@ interface TicketLine {
 interface BookingData {
   bookingId: string;
   userId: string;
+  eventId: string;
   eventSlug: string;
-  eventTitle: string;
-  eventDate: string;
-  venueName?: string;
   tickets: TicketLine[];
-  totalTickets: number;
-  billing?: {
-    legalName?: string;
-    email?: string;
-    whatsapp?: string;
-    nationality?: string;
-    residency?: string;
-    state?: string | null;
-  };
   pricing?: {
     subtotal?: number;
     grandTotal?: number;
@@ -43,6 +32,21 @@ interface BookingData {
   createdAt?: Timestamp;
   notificationSentAt?: Timestamp | null;
 }
+
+type EventLite = {
+  title?: string;
+  eventDate?: Timestamp | null;
+  venueName?: string;
+  venueAddress?: string;
+};
+
+type UserLite = {
+  name?: string;
+  email?: string;
+  phone?: string;
+  nationality?: string;
+  state?: string | null;
+};
 
 // ─── Sub-components ───────────────────────────────────────────────────────────
 
@@ -106,6 +110,8 @@ function SkeletonBlock({ height = 120 }: { height?: number }) {
 
 export default function BookingDetail({ bookingId }: { bookingId: string }) {
   const [booking, setBooking]     = useState<BookingData | null>(null);
+  const [event, setEvent]         = useState<EventLite | null>(null);
+  const [userProfile, setUserProfile] = useState<UserLite | null>(null);
   const [loading, setLoading]     = useState(true);
   const [uid, setUid]             = useState<string | null>(null);
   const [sending, setSending]     = useState(false);
@@ -122,7 +128,15 @@ export default function BookingDetail({ bookingId }: { bookingId: string }) {
         if (!snap.exists()) { setLoading(false); return; }
         const data = snap.data() as BookingData;
         if (data.userId !== user.uid) { setLoading(false); return; }
-        setBooking({ ...data, bookingId: snap.id });
+        const bookingDoc = { ...data, bookingId: snap.id };
+        setBooking(bookingDoc);
+
+        const [eventSnap, userSnap] = await Promise.all([
+          getDoc(doc(db, "events", String(bookingDoc.eventId))),
+          getDoc(doc(db, "users", String(bookingDoc.userId))),
+        ]);
+        setEvent(eventSnap.exists() ? (eventSnap.data() as EventLite) : null);
+        setUserProfile(userSnap.exists() ? (userSnap.data() as UserLite) : null);
       } catch (err) {
         console.error("Booking fetch error:", err);
       } finally {
@@ -294,6 +308,10 @@ export default function BookingDetail({ bookingId }: { bookingId: string }) {
     }
   `;
 
+  const eventTitle = event?.title ?? "Event";
+  const eventDate = event?.eventDate instanceof Timestamp ? event.eventDate.toDate() : null;
+  const totalTickets = booking?.tickets?.reduce((s, t) => s + (t.quantity ?? 0), 0) ?? 0;
+
   // ── Loading ─────────────────────────────────────────────────────────────────
   if (loading) return (
     <>
@@ -372,111 +390,35 @@ export default function BookingDetail({ bookingId }: { bookingId: string }) {
         </div>
 
         <div className="bd-body">
+          <div className="bd-eyebrow">Booking</div>
+          <h1 className="bd-title">{eventTitle}</h1>
 
-          {/* ── Event header ── */}
-          <div className="bd-eyebrow">Booking Details</div>
-          <h1 className="bd-title">{booking.eventTitle}</h1>
           <div className="bd-meta">
-            {booking.eventDate && (
-              <span className="bd-meta-item">
-                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
-                  <rect x="3" y="4" width="18" height="18" rx="2"/>
-                  <line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/>
-                  <line x1="3" y1="10" x2="21" y2="10"/>
-                </svg>
-                {new Date(booking.eventDate).toLocaleDateString("en-IN", {
-                  weekday: "short", day: "2-digit", month: "long", year: "numeric"
-                })}
-              </span>
+            {eventDate && (
+              <div className="bd-meta-item">
+                {eventDate.toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" })}
+              </div>
             )}
-            {booking.venueName && (
-              <span className="bd-meta-item">
-                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
-                  <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z"/>
-                  <circle cx="12" cy="9" r="2.5"/>
-                </svg>
-                {booking.venueName}
-              </span>
-            )}
-            <StatusBadge status={booking.paymentStatus} />
+            {event?.venueName && <div className="bd-meta-item">{event.venueName}</div>}
+            <div className="bd-meta-item"><StatusBadge status={booking.paymentStatus} /></div>
+            <div className="bd-meta-item">{totalTickets} ticket{totalTickets === 1 ? "" : "s"}</div>
           </div>
 
-          {/* ── QR Entry Pass ── */}
           <Card>
-            <CardLabel>Entry Pass — Show at Venue</CardLabel>
+            <CardLabel>Entry Pass</CardLabel>
             {isConfirmed ? (
               <div className="bd-qr-outer">
                 <div className="bd-qr-box">
-                  <BookingQR bookingId={booking.bookingId} size={210} />
+                  <BookingQR bookingId={booking.bookingId} />
                 </div>
-                <p className="bd-qr-hint">
-                  Present this QR at the venue entrance to confirm entry. We recommend taking a screenshot and keeping it handy.
-                </p>
-                <p className="bd-qr-id">{booking.bookingId}</p>
+                <div className="bd-qr-hint">Show this QR at the entry gate</div>
+                <div className="bd-qr-id">{booking.bookingId}</div>
               </div>
             ) : (
-              <div className="bd-qr-locked">
-                <svg width="38" height="38" viewBox="0 0 24 24" fill="none" stroke="rgba(240,237,230,0.18)" strokeWidth="1.5" style={{ display: "block", margin: "0 auto 12px" }}>
-                  <rect x="3" y="11" width="18" height="11" rx="2"/>
-                  <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
-                </svg>
-                QR code will appear once payment is confirmed
-              </div>
+              <div className="bd-qr-locked">QR will be available after payment is confirmed.</div>
             )}
           </Card>
 
-          {/* ── Resend ticket ── */}
-          {isConfirmed && (
-            <Card>
-              <CardLabel>Send Ticket</CardLabel>
-              <button
-                className={btnClass}
-                disabled={sending || sendStatus === "sent"}
-                onClick={handleSendNotification}
-              >
-                {sendStatus === "sending" ? (
-                  <>
-                    <svg className="bd-spin" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                      <path d="M21 12a9 9 0 1 1-6-8.485"/>
-                    </svg>
-                    Sending…
-                  </>
-                ) : sendStatus === "sent" ? (
-                  <>
-                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-                      <path d="M20 6L9 17l-5-5"/>
-                    </svg>
-                    Sent to WhatsApp &amp; Email
-                  </>
-                ) : sendStatus === "error" ? (
-                  <>
-                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                      <circle cx="12" cy="12" r="10"/>
-                      <line x1="12" y1="8" x2="12" y2="12"/>
-                      <line x1="12" y1="16" x2="12.01" y2="16"/>
-                    </svg>
-                    Failed — Tap to Retry
-                  </>
-                ) : (
-                  <>
-                    {/* WhatsApp icon */}
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
-                      <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/>
-                    </svg>
-                    Send to WhatsApp &amp; Email
-                  </>
-                )}
-              </button>
-              <p className="bd-send-sub">
-                {alreadySent && sendStatus === "idle"
-                  ? `Previously sent · tap to resend to ${booking.billing?.whatsapp ?? "your WhatsApp"} & ${booking.billing?.email ?? "your email"}`
-                  : `Ticket QR + invoice → ${booking.billing?.whatsapp ?? "your WhatsApp"} & ${booking.billing?.email ?? "your email"}`
-                }
-              </p>
-            </Card>
-          )}
-
-          {/* ── Ticket breakdown ── */}
           <Card>
             <CardLabel>Tickets</CardLabel>
             {booking.tickets?.map((t, i) => (
@@ -519,44 +461,58 @@ export default function BookingDetail({ bookingId }: { bookingId: string }) {
             </div>
           </Card>
 
+          <button
+            className={btnClass}
+            onClick={handleSendNotification}
+            disabled={sending || !isConfirmed || alreadySent || sendStatus === "sent"}
+          >
+            {sendStatus === "sent" ? "Sent" : sendStatus === "sending" ? "Sending" : alreadySent ? "Already Sent" : "Send Ticket"}
+          </button>
+
+          {sendStatus !== "idle" && sendStatus !== "sent" && (
+            <div className="bd-send-sub">
+              {sendStatus === "sending" ? "Sending ticket notification..." : "Could not send notification. Please try again."}
+            </div>
+          )}
+
           {/* ── Billing details ── */}
-          {booking.billing && (
+          {userProfile && (
             <Card>
               <CardLabel>Billing Details</CardLabel>
               <div className="bd-billing-grid">
-                {booking.billing.legalName && (
+                {userProfile.name && (
                   <div>
                     <div className="bd-billing-label">Name</div>
-                    <div className="bd-billing-val">{booking.billing.legalName}</div>
+                    <div className="bd-billing-val">{userProfile.name}</div>
                   </div>
                 )}
-                {booking.billing.email && (
+                {userProfile.email && (
                   <div>
                     <div className="bd-billing-label">Email</div>
-                    <div className="bd-billing-val" style={{ fontSize: 13 }}>{booking.billing.email}</div>
+                    <div className="bd-billing-val" style={{ fontSize: 13 }}>{userProfile.email}</div>
                   </div>
                 )}
-                {booking.billing.whatsapp && (
+                {userProfile.phone && (
                   <div>
                     <div className="bd-billing-label">WhatsApp</div>
-                    <div className="bd-billing-val">{booking.billing.whatsapp}</div>
+                    <div className="bd-billing-val">{userProfile.phone}</div>
                   </div>
                 )}
-                {booking.billing.nationality && (
+                {userProfile.nationality && (
                   <div>
                     <div className="bd-billing-label">Nationality</div>
-                    <div className="bd-billing-val">{booking.billing.nationality}</div>
+                    <div className="bd-billing-val">{userProfile.nationality}</div>
                   </div>
                 )}
-                {booking.billing.residency === "indian" && booking.billing.state && (
+                {userProfile.state && (
                   <div>
                     <div className="bd-billing-label">State</div>
-                    <div className="bd-billing-val">{booking.billing.state}</div>
+                    <div className="bd-billing-val">{userProfile.state}</div>
                   </div>
                 )}
                 {booking.paidAt instanceof Timestamp && (
                   <div>
-                    <div className="bd-billing-label">Paid On</div>
+                    <div className="bd-billing-label">Paid At</div>
                     <div className="bd-billing-val">
                       {booking.paidAt.toDate().toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" })}
                     </div>

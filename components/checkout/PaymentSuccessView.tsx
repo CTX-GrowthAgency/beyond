@@ -17,20 +17,9 @@ interface TicketLine {
 interface BookingData {
   bookingId: string;
   userId: string;
+  eventId: string;
   eventSlug: string;
-  eventTitle: string;
-  eventDate: string;
-  venueName?: string;
   tickets: TicketLine[];
-  totalTickets: number;
-  billing?: {
-    legalName?: string;
-    email?: string;
-    whatsapp?: string;
-    nationality?: string;
-    residency?: string;
-    state?: string | null;
-  };
   pricing?: {
     subtotal?: number;
     grandTotal?: number;
@@ -43,6 +32,20 @@ interface BookingData {
   createdAt?: Timestamp;
 }
 
+type EventData = {
+  title?: string;
+  eventDate?: Timestamp | null;
+  venueName?: string;
+};
+
+type UserData = {
+  name?: string;
+  email?: string;
+  phone?: string;
+  nationality?: string;
+  state?: string | null;
+};
+
 type PaymentSuccessViewProps = {
   bookingId?: string;
   orderId?: string;
@@ -54,6 +57,8 @@ export default function PaymentSuccessView({
 }: PaymentSuccessViewProps) {
   const [bookingId, setBookingId] = useState<string | undefined>(bookingIdProp);
   const [booking, setBooking] = useState<BookingData | null>(null);
+  const [event, setEvent] = useState<EventData | null>(null);
+  const [userProfile, setUserProfile] = useState<UserData | null>(null);
   const [loading, setLoading] = useState(true);
   const [uid, setUid] = useState<string | null>(null);
   const [verifyDone, setVerifyDone] = useState(false);
@@ -103,7 +108,20 @@ export default function PaymentSuccessView({
         setLoading(false);
         return;
       }
-      setBooking({ ...data, bookingId: snap.id });
+      const bookingDoc = { ...data, bookingId: snap.id };
+      setBooking(bookingDoc);
+
+      try {
+        const [eventSnap, userSnap] = await Promise.all([
+          getDoc(doc(db, "events", String(bookingDoc.eventId))),
+          getDoc(doc(db, "users", String(bookingDoc.userId))),
+        ]);
+        setEvent(eventSnap.exists() ? (eventSnap.data() as EventData) : null);
+        setUserProfile(userSnap.exists() ? (userSnap.data() as UserData) : null);
+      } catch (err) {
+        console.error("[PaymentSuccess] related doc fetch failed:", err);
+      }
+
       setLoading(false);
     });
     return () => unsub();
@@ -155,16 +173,22 @@ export default function PaymentSuccessView({
   const labelStyle = { fontSize: 11, letterSpacing: "0.1em", textTransform: "uppercase" as const, color: "var(--color-muted)", marginBottom: 4 };
   const valueStyle = { fontSize: 15 };
 
+  const eventTitle = event?.title ?? "Event";
+  const eventDateStr = event?.eventDate instanceof Timestamp
+    ? event.eventDate.toDate()
+    : null;
+  const totalTickets = booking.tickets?.reduce((s, t) => s + (t.quantity ?? 0), 0) ?? 0;
+
   return (
     <div className="container" style={{ paddingTop: "var(--spacing-12)", paddingBottom: "var(--spacing-12)", maxWidth: 560 }}>
       <Link href="/bookings" className="body-2" style={{ color: "var(--color-accent-primary)", marginBottom: "var(--spacing-6)", display: "inline-block" }}>
         ← My bookings
       </Link>
 
-      <h1 className="heading-1" style={{ marginBottom: "var(--spacing-2)" }}>{booking.eventTitle}</h1>
+      <h1 className="heading-1" style={{ marginBottom: "var(--spacing-2)" }}>{eventTitle}</h1>
       <p className="body-2 text-muted" style={{ marginBottom: "var(--spacing-8)" }}>
-        {booking.eventDate ? new Date(booking.eventDate).toLocaleString("en-IN", { dateStyle: "long", timeStyle: "short" }) : "—"}
-        {booking.venueName && ` · ${booking.venueName}`}
+        {eventDateStr ? eventDateStr.toLocaleString("en-IN", { dateStyle: "long", timeStyle: "short" }) : "—"}
+        {event?.venueName && ` · ${event.venueName}`}
       </p>
 
       {/* QR for venue scan */}
@@ -209,16 +233,16 @@ export default function PaymentSuccessView({
       </section>
 
       {/* Billing */}
-      {booking.billing && (
+      {userProfile && (
         <section style={sectionStyle}>
           <div style={labelStyle}>Billing details</div>
           <div style={valueStyle}>
-            {booking.billing.legalName && <div>{booking.billing.legalName}</div>}
-            {booking.billing.email && <div style={{ color: "var(--color-muted)" }}>{booking.billing.email}</div>}
-            {booking.billing.whatsapp && <div style={{ color: "var(--color-muted)" }}>{booking.billing.whatsapp}</div>}
-            {booking.billing.nationality && <div style={{ color: "var(--color-muted)", fontSize: 14 }}>{booking.billing.nationality}</div>}
-            {booking.billing.residency === "indian" && booking.billing.state && (
-              <div style={{ color: "var(--color-muted)", fontSize: 14 }}>{booking.billing.state}</div>
+            {userProfile.name && <div>{userProfile.name}</div>}
+            {userProfile.email && <div style={{ color: "var(--color-muted)" }}>{userProfile.email}</div>}
+            {userProfile.phone && <div style={{ color: "var(--color-muted)" }}>{userProfile.phone}</div>}
+            {userProfile.nationality && <div style={{ color: "var(--color-muted)", fontSize: 14 }}>{userProfile.nationality}</div>}
+            {userProfile.state && (
+              <div style={{ color: "var(--color-muted)", fontSize: 14 }}>{userProfile.state}</div>
             )}
           </div>
         </section>
@@ -230,6 +254,7 @@ export default function PaymentSuccessView({
         <div style={valueStyle}>
           Payment: {booking.paymentStatus === "completed" ? "Confirmed" : booking.paymentStatus === "pending_payment" ? "Pending" : booking.paymentStatus}
           {booking.ticketStatus && ` · Tickets: ${booking.ticketStatus}`}
+          {` · Qty: ${totalTickets}`}
         </div>
       </section>
     </div>

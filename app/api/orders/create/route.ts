@@ -161,8 +161,8 @@ export async function POST(req: NextRequest) {
 
     // ── Store order reference in booking ─────────────────────────────────────
     await bookingRef.update({
-      cashfreeOrderId,
-      paymentReference: cashfreeOrderId,
+      cashfreeOrderId: cashfreeOrderId,
+      paymentReference: cfData.payment_session_id,
       updatedAt: FieldValue.serverTimestamp(),
     });
 

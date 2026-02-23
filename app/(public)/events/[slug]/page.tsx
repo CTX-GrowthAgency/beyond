@@ -4,6 +4,7 @@ import Image from "next/image";
 import type { Event, Artist, TicketType } from "@/type/event";
 import ExpandableDescription from "@/components/event/ExpandableDescription";
 import EventSidebar from "@/components/event/EventSidebar";
+import EventMobileStickyBar from "@/components/event/EventMobileStickyBar";
 
 async function getEvent(slug: string): Promise<Event | null> {
   const query = `*[_type == "event" && eventSlug.current == $slug][0]{
@@ -975,17 +976,13 @@ export default async function EventPage({
           </div>
 
           {/* ── MOBILE STICKY CTA BAR ── */}
-          <div className="ev-sticky-bar">
-            <div>
-              <div className="ev-sticky-price-label">From</div>
-              <div className="ev-sticky-price">
-                {lowestPrice ? `₹${lowestPrice.toLocaleString("en-IN")}` : "Free"}
-              </div>
-            </div>
-            <a href={`/checkout/${slug}`} className="ev-sticky-cta">
-              Book Tickets
-            </a>
-          </div>
+          <EventMobileStickyBar
+            eventSlug={slug}
+            eventTitle={event.title}
+            lowestPrice={lowestPrice}
+            ticketTypes={event.ticketTypes ?? []}
+          />
+          {/* ── MOBILE STICKY CTA BAR fixed ── */}
 
         </div>
       </>

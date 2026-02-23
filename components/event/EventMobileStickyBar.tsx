@@ -19,14 +19,18 @@ export default function EventMobileStickyBar({
 
   return (
     <>
-      <div className="ev-sticky-bar">
-        <div>
-          <div className="ev-sticky-price-label">From</div>
-          <div className="ev-sticky-price">
-            {lowestPrice != null ? `₹${lowestPrice.toLocaleString("en-IN")}` : "Free"}
-          </div>
+      <div className="ev-mobile-sticky-bar">
+        <div className="ev-mobile-sticky-price">
+          From{" "}
+          {lowestPrice != null
+            ? `₹${lowestPrice.toLocaleString("en-IN")}`
+            : "Free"}
         </div>
-        <button type="button" className="ev-sticky-cta" onClick={() => setOpen(true)}>
+        <button
+          type="button"
+          className="ev-btn-primary"
+          onClick={() => setOpen(true)}
+        >
           Book Tickets
         </button>
       </div>

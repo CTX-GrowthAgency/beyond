@@ -20,7 +20,7 @@ export default function Footer() {
 
           <nav className="flex gap-6 flex-wrap body-2 text-secondary">
             <Link href="/terms_and_conditions">Terms & Conditions</Link>
-            <Link href="/privacy-policy">Privacy Policy</Link>
+            <Link href="/privacy_policy">Privacy Policy</Link>
             <Link href="/disclaimer">Disclaimer</Link>
           </nav>
 

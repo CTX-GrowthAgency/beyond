@@ -975,7 +975,7 @@ export default function CheckoutClient({
 
               {([
                 { key: "acceptTerms", label: <>I have read and accept the <a href="/terms_and_conditions" target="_blank" rel="noopener">Terms &amp; Conditions</a></> },
-                { key: "acceptPrivacy", label: <>I agree to the <a href="/privacy-policy" target="_blank" rel="noopener">Privacy Policy</a> and consent to data processing</> },
+                { key: "acceptPrivacy", label: <>I agree to the <a href="/privacy_policy" target="_blank" rel="noopener">Privacy Policy</a> and consent to data processing</> },
                 { key: "acceptDisclaimer", label: <>I acknowledge the <a href="/disclaimer" target="_blank" rel="noopener">Disclaimer</a>. Tickets are non-refundable and non-transferable.</> },
               ] as const).map(({ key, label }) => (
                 <div

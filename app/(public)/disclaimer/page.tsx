@@ -95,10 +95,6 @@ export default function DisclaimerPage() {
 
           <div className="legal-content">
 
-            <div className="legal-warning">
-              <p>CRITICAL NOTICE: The Platform is operated as an academic and experimental project by college students for learning, testing, and validation purposes. By using BEYOND, you acknowledge and accept the Trial Phase nature of the Platform and all risks associated with its use.</p>
-            </div>
-
             {/* 1 */}
             <section id="trial" className="legal-section">
               <div className="legal-section-number">01</div>
@@ -111,7 +107,6 @@ export default function DisclaimerPage() {
                 <li>Technical issues, bugs, or errors may occur</li>
                 <li>Support may be limited or delayed</li>
                 <li>The Platform may not be available 24/7</li>
-                <li>Student-operated infrastructure may have limitations</li>
               </ul>
               <p className="legal-p">Use of the Platform during Trial Phase involves inherent risks associated with experimental services. We make no guarantees of service availability, reliability, or fitness for any particular purpose.</p>
             </section>
@@ -144,8 +139,6 @@ export default function DisclaimerPage() {
               <ul className="legal-ul">
                 <li>Warranties of merchantability, fitness for particular purpose</li>
                 <li>Warranties of uninterrupted, error-free operation</li>
-                <li>Warranties regarding information accuracy or completeness</li>
-                <li>Warranties of data security or privacy</li>
                 <li>Any warranties regarding event occurrence or quality</li>
               </ul>
             </section>
@@ -176,7 +169,7 @@ export default function DisclaimerPage() {
               <ul className="legal-ul">
                 <li><strong style={{color:"#f0ede6",fontWeight:500}}>Firebase (Google)</strong> — Hosting and database infrastructure</li>
                 <li><strong style={{color:"#f0ede6",fontWeight:500}}>Cashfree</strong> — Payment processing</li>
-                <li><strong style={{color:"#f0ede6",fontWeight:500}}>Wati</strong> — WhatsApp communication</li>
+                <li><strong style={{color:"#f0ede6",fontWeight:500}}>Resend</strong> — Email communication</li>
               </ul>
             </section>
 

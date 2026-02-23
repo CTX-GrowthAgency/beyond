@@ -22,6 +22,7 @@ export default function Footer() {
             <Link href="/terms_and_conditions">Terms & Conditions</Link>
             <Link href="/privacy_policy">Privacy Policy</Link>
             <Link href="/disclaimer">Disclaimer</Link>
+            <Link href="https://forms.gle/iGfiM2woZqiEVXnA7">List Your Events</Link>
           </nav>
 
         </div>

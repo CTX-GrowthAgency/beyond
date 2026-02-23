@@ -121,6 +121,7 @@ export default async function EventPage({
         <style>{`
           @import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&display=swap');
 
+          /* ─── Base ─────────────────────────────────────────────────── */
           .ev-root {
             min-height: 100vh;
             background: #080808;
@@ -128,12 +129,16 @@ export default async function EventPage({
             font-family: 'DM Sans', sans-serif;
           }
 
-          /* ── Hero ── */
+          /* ─── Hero ─────────────────────────────────────────────────── */
           .ev-hero {
             position: relative;
             width: 100%;
             height: min(92vh, 760px);
             overflow: hidden;
+          }
+          /* Shorter on mobile so content below the fold is reachable */
+          @media (max-width: 640px) {
+            .ev-hero { height: min(74vh, 500px); }
           }
           .ev-hero-img {
             object-fit: cover;
@@ -152,10 +157,8 @@ export default async function EventPage({
           }
           .ev-hero-content {
             position: absolute;
-            bottom: 0;
-            left: 0;
-            right: 0;
-            padding: clamp(24px, 5vw, 64px);
+            bottom: 0; left: 0; right: 0;
+            padding: clamp(18px, 5vw, 64px);
           }
           .ev-tag {
             display: inline-flex;
@@ -169,34 +172,34 @@ export default async function EventPage({
             border: 1px solid rgba(201,185,122,0.35);
             padding: 5px 12px;
             border-radius: 2px;
-            margin-bottom: 18px;
+            margin-bottom: 14px;
           }
           .ev-title {
             font-family: 'Bebas Neue', sans-serif;
-            font-size: clamp(48px, 9vw, 108px);
+            font-size: clamp(36px, 9vw, 108px);
             line-height: 0.92;
             letter-spacing: 0.02em;
             text-transform: uppercase;
             color: #f0ede6;
-            margin: 0 0 28px;
+            margin: 0 0 18px;
+            overflow-wrap: break-word;
+            word-break: break-word;
           }
           .ev-meta-row {
             display: flex;
             flex-wrap: wrap;
-            gap: 24px;
+            gap: 10px 18px;
             align-items: center;
           }
           .ev-meta-item {
             display: flex;
             align-items: center;
-            gap: 8px;
-            font-size: 14px;
+            gap: 7px;
+            font-size: 13px;
             color: rgba(240,237,230,0.7);
           }
-          .ev-meta-item svg {
-            opacity: 0.5;
-            flex-shrink: 0;
-          }
+          @media (max-width: 480px) { .ev-meta-item { font-size: 12px; } }
+          .ev-meta-item svg { opacity: 0.5; flex-shrink: 0; }
 
           /* ── Body layout ── */
           .ev-body {

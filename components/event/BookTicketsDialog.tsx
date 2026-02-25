@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import { getAuth, GoogleAuthProvider, onAuthStateChanged, signInWithPopup } from "firebase/auth";
 import { app } from "@/lib/firebase/client";
 import { useRouter } from "next/navigation";
-import type { TicketType } from "@/type/event";
+import type { TicketType } from "@/types/event";
 
 interface BookTicketsDialogProps {
   isOpen: boolean;

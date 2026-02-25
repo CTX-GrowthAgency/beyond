@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { sanityClient } from "@/lib/sanity/client";
 import { urlFor } from "@/lib/sanity/image";
 import EventsGrid from "@/components/event/EventsGrid";
-import { Event } from "../../../type/event";
+import { Event } from "../../../types/event";
 
 // ── SEO ───────────────────────────────────────────────────────────────────────
 export const metadata: Metadata = {

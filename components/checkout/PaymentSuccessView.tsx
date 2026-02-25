@@ -1,11 +1,11 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { getAuth, onAuthStateChanged } from "firebase/auth";
 import { getFirestore, doc, getDoc, Timestamp } from "firebase/firestore";
 import { app } from "@/lib/firebase/client";
-import BookingQR from "@/components/checkout/BookingQR";
 
 interface TicketLine {
   name: string;
@@ -38,35 +38,320 @@ type EventData = {
   venueName?: string;
 };
 
-type UserData = {
-  name?: string;
-  email?: string;
-  phone?: string;
-  nationality?: string;
-  state?: string | null;
-};
-
 type PaymentSuccessViewProps = {
   bookingId?: string;
   orderId?: string;
 };
 
+// ─── CSS ──────────────────────────────────────────────────────────────────────
+const STYLES = `
+  @import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&display=swap');
+
+  @keyframes ps-spin {
+    to { transform: rotate(360deg); }
+  }
+  @keyframes ps-pulse {
+    0%, 100% { opacity: 0.45; transform: scale(0.9); }
+    50%       { opacity: 1;    transform: scale(1); }
+  }
+  @keyframes ps-up {
+    from { opacity: 0; transform: translateY(16px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+  @keyframes ps-dot {
+    0%, 80%, 100% { background: rgba(201,185,122,0.2); transform: scale(0.8); }
+    40%           { background: #c9b97a; transform: scale(1.35); }
+  }
+  @keyframes ps-ring-pop {
+    0%   { transform: scale(0.5); opacity: 0; }
+    65%  { transform: scale(1.08); opacity: 1; }
+    100% { transform: scale(1); opacity: 1; }
+  }
+  @keyframes ps-check {
+    from { stroke-dashoffset: 56; }
+    to   { stroke-dashoffset: 0; }
+  }
+  @keyframes ps-shimmer {
+    0%   { background-position: -200% center; }
+    100% { background-position:  200% center; }
+  }
+  @keyframes ps-countdown {
+    from { width: 100%; }
+    to   { width: 0%; }
+  }
+
+  /* ── Loading ── */
+  .bkl-root {
+    min-height: 72vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 32px;
+    padding: 80px 24px;
+    text-align: center;
+  }
+  .bkl-icon-wrap {
+    position: relative;
+    width: 80px; height: 80px;
+  }
+  .bkl-ring {
+    position: absolute; inset: 0;
+    border-radius: 50%;
+    border: 1px solid rgba(201,185,122,0.12);
+    border-top-color: #c9b97a;
+    animation: ps-spin 1.1s linear infinite;
+  }
+  .bkl-ring-2 {
+    position: absolute; inset: 10px;
+    border-radius: 50%;
+    border: 1px solid rgba(201,185,122,0.07);
+    border-bottom-color: rgba(201,185,122,0.3);
+    animation: ps-spin 1.9s linear infinite reverse;
+  }
+  .bkl-icon {
+    position: absolute; inset: 0;
+    display: flex; align-items: center; justify-content: center;
+    animation: ps-pulse 1.8s ease-in-out infinite;
+  }
+  .bkl-heading {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: clamp(26px, 5vw, 38px);
+    letter-spacing: 0.06em;
+    color: #FAFAFA; margin: 0;
+  }
+  .bkl-sub {
+    font-size: 11px; letter-spacing: 0.16em;
+    text-transform: uppercase; color: #6F6F6F; margin: 6px 0 0;
+  }
+  .bkl-dots { display: flex; gap: 7px; align-items: center; }
+  .bkl-dot {
+    width: 4px; height: 4px; border-radius: 50%;
+    animation: ps-dot 1.2s ease-in-out infinite;
+  }
+  .bkl-dot:nth-child(1) { animation-delay: 0s; }
+  .bkl-dot:nth-child(2) { animation-delay: 0.18s; }
+  .bkl-dot:nth-child(3) { animation-delay: 0.36s; }
+
+  /* ── Success ── */
+  .ps-root {
+    min-height: 100vh;
+    padding: 48px 0 96px;
+    animation: ps-up 0.5s ease both;
+  }
+  .ps-inner {
+    max-width: 520px;
+    margin: 0 auto;
+    padding: 0 20px;
+  }
+
+  /* Hero */
+  .ps-hero {
+    text-align: center;
+    padding-bottom: 40px;
+    border-bottom: 1px solid rgba(255,255,255,0.06);
+    margin-bottom: 40px;
+  }
+  .ps-check-wrap {
+    width: 72px; height: 72px;
+    margin: 0 auto 24px;
+    animation: ps-ring-pop 0.55s cubic-bezier(0.22,1,0.36,1) both;
+  }
+  .ps-check-bg {
+    width: 100%; height: 100%;
+    border-radius: 50%;
+    border: 1.5px solid rgba(201,185,122,0.35);
+    background: rgba(201,185,122,0.07);
+    display: flex; align-items: center; justify-content: center;
+  }
+  .ps-check-path {
+    stroke-dasharray: 56;
+    stroke-dashoffset: 56;
+    animation: ps-check 0.38s ease 0.4s forwards;
+  }
+  .ps-eyebrow {
+    font-size: 10px; letter-spacing: 0.24em;
+    text-transform: uppercase; color: #c9b97a;
+    margin-bottom: 10px;
+  }
+  .ps-title {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: clamp(40px, 9vw, 72px);
+    line-height: 0.88; letter-spacing: 0.01em;
+    color: #FAFAFA; margin: 0 0 16px;
+  }
+  .ps-event-name {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: clamp(20px, 4vw, 30px);
+    letter-spacing: 0.04em;
+    background: linear-gradient(90deg, #c9b97a 0%, #f0e5b0 45%, #c9b97a 65%, #a89660 100%);
+    background-size: 200% auto;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    animation: ps-shimmer 3s linear infinite;
+    margin: 0 0 10px;
+  }
+  .ps-event-meta {
+    font-size: 13px; color: #6F6F6F;
+    font-weight: 300; line-height: 1.65;
+  }
+
+  /* Countdown redirect bar */
+  .ps-redirect-bar {
+    margin-top: 28px;
+    padding: 14px 18px;
+    background: rgba(201,185,122,0.05);
+    border: 1px solid rgba(201,185,122,0.18);
+    display: flex; flex-direction: column; gap: 10px;
+  }
+  .ps-redirect-text {
+    font-size: 11px; letter-spacing: 0.12em;
+    text-transform: uppercase; color: rgba(201,185,122,0.7);
+    display: flex; align-items: center; justify-content: space-between;
+  }
+  .ps-redirect-count {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 18px; color: #c9b97a;
+  }
+  .ps-redirect-track {
+    height: 1px; background: rgba(201,185,122,0.12); overflow: hidden;
+  }
+  .ps-redirect-fill {
+    height: 100%; background: #c9b97a;
+    animation: ps-countdown 5s linear forwards;
+  }
+
+  /* Section labels */
+  .ps-label {
+    display: flex; align-items: center; gap: 10px;
+    font-size: 10px; font-weight: 600;
+    letter-spacing: 0.22em; text-transform: uppercase;
+    color: #c9b97a; margin-bottom: 14px;
+  }
+  .ps-label::after {
+    content: ''; flex: 1; height: 1px;
+    background: linear-gradient(to right, rgba(201,185,122,0.18), transparent);
+  }
+
+  /* Ticket list */
+  .ps-tickets {
+    display: flex; flex-direction: column;
+    gap: 1px; background: rgba(255,255,255,0.05);
+    margin-bottom: 2px;
+  }
+  .ps-ticket-row {
+    display: flex; justify-content: space-between;
+    align-items: center; padding: 14px 18px;
+    background: #020202;
+  }
+  .ps-ticket-name {
+    font-size: 14px; font-weight: 500; color: #FAFAFA;
+  }
+  .ps-ticket-qty {
+    font-size: 11px; color: #6F6F6F; margin-top: 2px;
+  }
+  .ps-ticket-price {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 22px; color: #c9b97a; letter-spacing: 0.04em;
+  }
+  .ps-total-row {
+    display: flex; justify-content: space-between;
+    align-items: center; padding: 14px 18px;
+    border: 1px solid rgba(201,185,122,0.15);
+    background: rgba(201,185,122,0.035);
+    margin-bottom: 36px;
+  }
+  .ps-total-label {
+    font-size: 11px; letter-spacing: 0.16em;
+    text-transform: uppercase; color: #CFCFCF; font-weight: 600;
+  }
+  .ps-total-value {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 30px; color: #FAFAFA; letter-spacing: 0.02em;
+  }
+
+  /* View ticket CTA */
+  .ps-cta {
+    display: flex; flex-direction: column; gap: 10px;
+    margin-top: 12px;
+  }
+  .ps-cta-primary {
+    display: flex; align-items: center; justify-content: center; gap: 10px;
+    width: 100%; padding: 18px;
+    background: #c9b97a; color: #020202;
+    font-family: var(--font-family-avalon, sans-serif);
+    font-size: 12px; font-weight: 700;
+    letter-spacing: 0.16em; text-transform: uppercase;
+    text-decoration: none; border-radius: 0;
+    transition: opacity 0.18s, transform 0.15s;
+  }
+  .ps-cta-primary:hover { opacity: 0.88; transform: translateY(-1px); }
+
+  .ps-cta-secondary {
+    display: flex; align-items: center; justify-content: center;
+    width: 100%; padding: 15px;
+    border: 1px solid rgba(255,255,255,0.1);
+    color: #6F6F6F; background: transparent;
+    font-size: 11px; font-weight: 600;
+    letter-spacing: 0.14em; text-transform: uppercase;
+    text-decoration: none; border-radius: 0;
+    transition: border-color 0.18s, color 0.18s;
+  }
+  .ps-cta-secondary:hover {
+    border-color: rgba(255,255,255,0.25);
+    color: #CFCFCF; opacity: 1;
+  }
+
+  /* Error / empty states */
+  .ps-state {
+    min-height: 50vh;
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    gap: 16px; text-align: center;
+    padding: 48px 24px;
+  }
+  .ps-state-icon { opacity: 0.25; margin-bottom: 8px; }
+  .ps-state-title {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 28px; letter-spacing: 0.06em;
+    color: #FAFAFA; margin: 0;
+  }
+  .ps-state-sub {
+    font-size: 13px; color: #6F6F6F;
+    font-weight: 300; line-height: 1.6;
+    max-width: 320px; margin: 0;
+  }
+  .ps-state-link {
+    font-size: 11px; letter-spacing: 0.14em;
+    text-transform: uppercase; color: #c9b97a;
+    text-decoration: none; margin-top: 8px;
+    transition: opacity 0.15s;
+  }
+  .ps-state-link:hover { opacity: 0.7; }
+`;
+
+// ─── Component ────────────────────────────────────────────────────────────────
 export default function PaymentSuccessView({
   bookingId: bookingIdProp,
   orderId,
 }: PaymentSuccessViewProps) {
+  const router = useRouter();
   const [bookingId, setBookingId] = useState<string | undefined>(bookingIdProp);
   const [booking, setBooking] = useState<BookingData | null>(null);
   const [event, setEvent] = useState<EventData | null>(null);
-  const [userProfile, setUserProfile] = useState<UserData | null>(null);
   const [loading, setLoading] = useState(true);
   const [uid, setUid] = useState<string | null>(null);
-  const [verifyDone, setVerifyDone] = useState(false);
+  const [countdown, setCountdown] = useState(5);
 
-  // Call Cashfree verify when we have bookingId + orderId (redirect from payment)
+  // useRef instead of useState — prevents re-render when toggled
+  const verifyDoneRef = useRef(false);
+
+  // ── Step 1: verify payment with Cashfree ──────────────────────────────────
   useEffect(() => {
-    if (!bookingIdProp || !orderId || verifyDone) return;
-    setVerifyDone(true);
+    if (!bookingIdProp || !orderId || verifyDoneRef.current) return;
+    verifyDoneRef.current = true; // no setState, no re-render
+
     fetch("/api/cashfree/verify", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -74,189 +359,277 @@ export default function PaymentSuccessView({
     })
       .then((res) => res.json())
       .then((data) => {
+        // setState inside .then() callback — async, safe
         if (data.status === "completed" || data.bookingId) {
           setBookingId(data.bookingId ?? bookingIdProp);
         }
       })
       .catch((err) => console.error("[PaymentSuccess] verify failed:", err));
-  }, [bookingIdProp, orderId, verifyDone]);
+  }, [bookingIdProp, orderId]);
 
+  // ── Step 2: load booking + event from Firestore ───────────────────────────
   useEffect(() => {
     const effectiveBookingId = bookingId ?? bookingIdProp;
     if (!effectiveBookingId) {
-      setLoading(false);
+      // setState deferred to next tick — avoids "setState in render" warning
+      Promise.resolve().then(() => setLoading(false));
       return;
     }
+
     const auth = getAuth(app);
-    const unsub = onAuthStateChanged(auth, async (user) => {
+    const unsub = onAuthStateChanged(auth, (user) => {
+      // All setStates here are inside an async callback — safe
       if (!user) {
         setUid(null);
         setLoading(false);
         return;
       }
       setUid(user.uid);
+
       const db = getFirestore(app);
-      const snap = await getDoc(doc(db, "bookings", effectiveBookingId));
-      if (!snap.exists()) {
-        setBooking(null);
-        setLoading(false);
-        return;
-      }
-      const data = snap.data() as BookingData;
-      if (data.userId !== user.uid) {
-        setBooking(null);
-        setLoading(false);
-        return;
-      }
-      const bookingDoc = { ...data, bookingId: snap.id };
-      setBooking(bookingDoc);
+      getDoc(doc(db, "bookings", effectiveBookingId))
+        .then((snap) => {
+          if (!snap.exists()) {
+            setBooking(null);
+            setLoading(false);
+            return;
+          }
 
-      try {
-        const [eventSnap, userSnap] = await Promise.all([
-          getDoc(doc(db, "events", String(bookingDoc.eventId))),
-          getDoc(doc(db, "users", String(bookingDoc.userId))),
-        ]);
-        setEvent(eventSnap.exists() ? (eventSnap.data() as EventData) : null);
-        setUserProfile(userSnap.exists() ? (userSnap.data() as UserData) : null);
-      } catch (err) {
-        console.error("[PaymentSuccess] related doc fetch failed:", err);
-      }
+          const data = snap.data() as BookingData;
+          if (data.userId !== user.uid) {
+            setBooking(null);
+            setLoading(false);
+            return;
+          }
 
-      setLoading(false);
+          const bookingDoc = { ...data, bookingId: snap.id };
+          setBooking(bookingDoc);
+
+          return getDoc(doc(db, "events", String(bookingDoc.eventId)))
+            .then((eventSnap) => {
+              setEvent(eventSnap.exists() ? (eventSnap.data() as EventData) : null);
+            })
+            .catch((err) => {
+              console.error("[PaymentSuccess] event fetch failed:", err);
+            });
+        })
+        .then(() => setLoading(false))
+        .catch((err) => {
+          console.error("[PaymentSuccess] booking fetch failed:", err);
+          setLoading(false);
+        });
     });
+
     return () => unsub();
   }, [bookingId, bookingIdProp]);
 
+  // ── Step 3: countdown redirect — setTimeout recursion, no setState inside setState ──
+  useEffect(() => {
+    if (loading || !booking) return;
+
+    // Guard: don't schedule if already at 0
+    if (countdown <= 0) {
+      router.push(`/bookings/${booking.bookingId}`);
+      return;
+    }
+
+    const timer = setTimeout(() => {
+      setCountdown((c) => c - 1); // only decrements — redirect handled by next effect run
+    }, 1000);
+
+    return () => clearTimeout(timer); // always clean up
+  }, [loading, booking, countdown, router]);
+
+  // ── Derived values ────────────────────────────────────────────────────────
   const effectiveBookingId = bookingId ?? bookingIdProp;
+
+  const eventDateStr =
+    event?.eventDate instanceof Timestamp
+      ? event.eventDate
+          .toDate()
+          .toLocaleString("en-IN", { dateStyle: "long", timeStyle: "short" })
+      : null;
+
+  // ── No booking ID in URL ──────────────────────────────────────────────────
   if (!effectiveBookingId) {
     return (
-      <div className="container" style={{ paddingTop: "var(--spacing-12)", paddingBottom: "var(--spacing-12)" }}>
-        <p className="body-2 text-muted">No booking information in the URL.</p>
-        <p className="body-2 text-muted" style={{ marginTop: 8 }}>
-          If you just completed payment, your ticket and invoice have been sent to your email.
-        </p>
-        <Link href="/bookings" className="body-2" style={{ color: "var(--color-accent-primary)", marginTop: 12, display: "inline-block" }}>
-          ← My bookings
-        </Link>
-      </div>
+      <>
+        <style>{STYLES}</style>
+        <div className="ps-state">
+          <div className="ps-state-icon">
+            <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#FAFAFA" strokeWidth="1.5">
+              <circle cx="12" cy="12" r="10" /><line x1="12" y1="8" x2="12" y2="12" /><circle cx="12" cy="16" r="0.5" fill="#FAFAFA" />
+            </svg>
+          </div>
+          <h2 className="ps-state-title">Nothing to show</h2>
+          <p className="ps-state-sub">
+            No booking info was found in the URL. If you just paid, your ticket has been sent to your email.
+          </p>
+          <Link href="/bookings" className="ps-state-link">View my bookings →</Link>
+        </div>
+      </>
     );
   }
 
+  // ── Loading ───────────────────────────────────────────────────────────────
   if (loading) {
     return (
-      <div className="container" style={{ paddingTop: "var(--spacing-12)", paddingBottom: "var(--spacing-12)" }}>
-        <p className="body-2 text-muted">Loading booking…</p>
-      </div>
+      <>
+        <style>{STYLES}</style>
+        <div className="bkl-root">
+          <div className="bkl-icon-wrap">
+            <div className="bkl-ring" />
+            <div className="bkl-ring-2" />
+            <div className="bkl-icon">
+              <svg width="26" height="26" viewBox="0 0 24 24" fill="none"
+                stroke="#c9b97a" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M2 9a3 3 0 0 1 0 6v2a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-2a3 3 0 0 1 0-6V7a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2Z" />
+                <path d="M13 5v2M13 17v2M13 11v2" />
+              </svg>
+            </div>
+          </div>
+          <div>
+            <h2 className="bkl-heading">Verifying your payment</h2>
+            <p className="bkl-sub">Hang tight — securing your spot</p>
+          </div>
+          <div className="bkl-dots" role="status" aria-label="Loading">
+            <span className="bkl-dot" />
+            <span className="bkl-dot" />
+            <span className="bkl-dot" />
+          </div>
+        </div>
+      </>
     );
   }
 
+  // ── Not logged in ─────────────────────────────────────────────────────────
   if (!uid) {
     return (
-      <div className="container" style={{ paddingTop: "var(--spacing-12)", paddingBottom: "var(--spacing-12)" }}>
-        <p className="body-2 text-muted">Please log in to view this booking.</p>
-      </div>
+      <>
+        <style>{STYLES}</style>
+        <div className="ps-state">
+          <h2 className="ps-state-title">Please log in</h2>
+          <p className="ps-state-sub">You need to be logged in to view this booking.</p>
+        </div>
+      </>
     );
   }
 
+  // ── Booking not found ─────────────────────────────────────────────────────
   if (!booking) {
     return (
-      <div className="container" style={{ paddingTop: "var(--spacing-12)", paddingBottom: "var(--spacing-12)" }}>
-        <p className="body-2 text-muted">Booking not found.</p>
-        <Link href="/bookings" className="body-2" style={{ color: "var(--color-accent-primary)", marginTop: 8, display: "inline-block" }}>
-          ← My bookings
-        </Link>
-      </div>
+      <>
+        <style>{STYLES}</style>
+        <div className="ps-state">
+          <div className="ps-state-icon">
+            <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#FAFAFA" strokeWidth="1.5">
+              <path d="M2 9a3 3 0 0 1 0 6v2a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-2a3 3 0 0 1 0-6V7a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2Z" />
+            </svg>
+          </div>
+          <h2 className="ps-state-title">Booking not found</h2>
+          <p className="ps-state-sub">
+            We couldn&apos;t find this booking. It may still be processing — check your bookings page in a moment.
+          </p>
+          <Link href="/bookings" className="ps-state-link">View my bookings →</Link>
+        </div>
+      </>
     );
   }
 
-  const sectionStyle = { marginBottom: "var(--spacing-8)" };
-  const labelStyle = { fontSize: 11, letterSpacing: "0.1em", textTransform: "uppercase" as const, color: "var(--color-muted)", marginBottom: 4 };
-  const valueStyle = { fontSize: 15 };
-
-  const eventTitle = event?.title ?? "Event";
-  const eventDateStr = event?.eventDate instanceof Timestamp
-    ? event.eventDate.toDate()
-    : null;
+  // ── SUCCESS ───────────────────────────────────────────────────────────────
   const totalTickets = booking.tickets?.reduce((s, t) => s + (t.quantity ?? 0), 0) ?? 0;
 
   return (
-    <div className="container" style={{ paddingTop: "var(--spacing-12)", paddingBottom: "var(--spacing-12)", maxWidth: 560 }}>
-      <Link href="/bookings" className="body-2" style={{ color: "var(--color-accent-primary)", marginBottom: "var(--spacing-6)", display: "inline-block" }}>
-        ← My bookings
-      </Link>
+    <>
+      <style>{STYLES}</style>
+      <div className="ps-root">
+        <div className="ps-inner">
 
-      <h1 className="heading-1" style={{ marginBottom: "var(--spacing-2)" }}>{eventTitle}</h1>
-      <p className="body-2 text-muted" style={{ marginBottom: "var(--spacing-8)" }}>
-        {eventDateStr ? eventDateStr.toLocaleString("en-IN", { dateStyle: "long", timeStyle: "short" }) : "—"}
-        {event?.venueName && ` · ${event.venueName}`}
-      </p>
+          {/* ── HERO ── */}
+          <div className="ps-hero">
+            <div className="ps-check-wrap">
+              <div className="ps-check-bg">
+                <svg width="30" height="30" viewBox="0 0 24 24" fill="none">
+                  <polyline
+                    className="ps-check-path"
+                    points="5,13 10,18 19,7"
+                    stroke="#c9b97a"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    fill="none"
+                  />
+                </svg>
+              </div>
+            </div>
 
-      {/* QR for venue scan */}
-      <section style={{ ...sectionStyle, textAlign: "center" }}>
-        <div style={labelStyle}>Show at venue</div>
-        <div style={{ background: "#fff", padding: 16, borderRadius: 12, display: "inline-block", marginTop: 4 }}>
-          <BookingQR bookingId={booking.bookingId} size={220} />
-        </div>
-        <p style={{ fontSize: 12, color: "var(--color-muted)", marginTop: 8 }}>
-          Scan this QR at the venue to confirm entry. We recommend taking a screenshot and saving it on your phone.
-        </p>
-      </section>
+            <p className="ps-eyebrow">Payment confirmed</p>
+            <h1 className="ps-title">You&apos;re in.</h1>
 
-      {/* Tickets */}
-      <section style={sectionStyle}>
-        <div style={labelStyle}>Tickets</div>
-        <ul style={{ listStyle: "none", padding: 0, margin: 0 }}>
-          {booking.tickets?.map((t, i) => (
-            <li
-              key={i}
-              style={{
-                display: "flex",
-                justifyContent: "space-between",
-                alignItems: "center",
-                padding: "12px 0",
-                borderBottom: "1px solid rgba(255,255,255,0.06)",
-              }}
-            >
-              <span style={valueStyle}>
-                {t.name} × {t.quantity}
-              </span>
-              <span style={valueStyle}>₹{t.lineTotal.toLocaleString("en-IN")}</span>
-            </li>
-          ))}
-        </ul>
-        {booking.pricing?.grandTotal != null && (
-          <div style={{ display: "flex", justifyContent: "space-between", marginTop: 12, fontWeight: 600 }}>
-            <span>Total</span>
-            <span>₹{booking.pricing.grandTotal.toLocaleString("en-IN")}</span>
+            {event?.title && <p className="ps-event-name">{event.title}</p>}
+            <p className="ps-event-meta">
+              {eventDateStr ?? ""}
+              {event?.venueName && eventDateStr ? ` · ${event.venueName}` : event?.venueName ?? ""}
+              {totalTickets > 0 && ` · ${totalTickets} ticket${totalTickets > 1 ? "s" : ""}`}
+            </p>
+
+            {/* Countdown redirect bar */}
+            <div className="ps-redirect-bar">
+              <div className="ps-redirect-text">
+                <span>Taking you to your ticket</span>
+                <span className="ps-redirect-count">{countdown}s</span>
+              </div>
+              <div className="ps-redirect-track">
+                <div className="ps-redirect-fill" />
+              </div>
+            </div>
           </div>
-        )}
-      </section>
 
-      {/* Billing */}
-      {userProfile && (
-        <section style={sectionStyle}>
-          <div style={labelStyle}>Billing details</div>
-          <div style={valueStyle}>
-            {userProfile.name && <div>{userProfile.name}</div>}
-            {userProfile.email && <div style={{ color: "var(--color-muted)" }}>{userProfile.email}</div>}
-            {userProfile.phone && <div style={{ color: "var(--color-muted)" }}>{userProfile.phone}</div>}
-            {userProfile.nationality && <div style={{ color: "var(--color-muted)", fontSize: 14 }}>{userProfile.nationality}</div>}
-            {userProfile.state && (
-              <div style={{ color: "var(--color-muted)", fontSize: 14 }}>{userProfile.state}</div>
-            )}
+          {/* ── TICKETS ── */}
+          {(booking.tickets?.length ?? 0) > 0 && (
+            <div style={{ marginBottom: 36 }}>
+              <div className="ps-label">Your tickets</div>
+              <div className="ps-tickets">
+                {booking.tickets.map((t, i) => (
+                  <div key={i} className="ps-ticket-row">
+                    <div>
+                      <div className="ps-ticket-name">{t.name}</div>
+                      <div className="ps-ticket-qty">× {t.quantity}</div>
+                    </div>
+                    <div className="ps-ticket-price">
+                      ₹{t.lineTotal.toLocaleString("en-IN")}
+                    </div>
+                  </div>
+                ))}
+              </div>
+              {booking.pricing?.grandTotal != null && (
+                <div className="ps-total-row">
+                  <span className="ps-total-label">Total paid</span>
+                  <span className="ps-total-value">
+                    ₹{booking.pricing.grandTotal.toLocaleString("en-IN")}
+                  </span>
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* ── CTA BUTTONS ── */}
+          <div className="ps-cta">
+            <Link href={`/bookings/${booking.bookingId}`} className="ps-cta-primary">
+              View ticket & QR code
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none"
+                stroke="currentColor" strokeWidth="2.5" aria-hidden="true">
+                <line x1="5" y1="12" x2="19" y2="12" />
+                <polyline points="12 5 19 12 12 19" />
+              </svg>
+            </Link>
+            <Link href="/bookings" className="ps-cta-secondary">
+              All my bookings
+            </Link>
           </div>
-        </section>
-      )}
 
-      {/* Status */}
-      <section style={sectionStyle}>
-        <div style={labelStyle}>Status</div>
-        <div style={valueStyle}>
-          Payment: {booking.paymentStatus === "completed" ? "Confirmed" : booking.paymentStatus === "pending_payment" ? "Pending" : booking.paymentStatus}
-          {booking.ticketStatus && ` · Tickets: ${booking.ticketStatus}`}
-          {` · Qty: ${totalTickets}`}
         </div>
-      </section>
-    </div>
+      </div>
+    </>
   );
 }

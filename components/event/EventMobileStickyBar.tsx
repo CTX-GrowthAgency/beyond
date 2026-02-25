@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import type { TicketType } from "@/type/event";
+import type { TicketType } from "@/types/event";
 import BookTicketsDialog from "./BookTicketsDialog";
 
 export default function EventMobileStickyBar({

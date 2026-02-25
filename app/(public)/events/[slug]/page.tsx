@@ -2,7 +2,7 @@ import { sanityClient } from "@/lib/sanity/client";
 import { urlFor } from "@/lib/sanity/image";
 import Image from "next/image";
 import type { Metadata } from "next";
-import type { Event, Artist, TicketType } from "@/type/event";
+import type { Event, Artist, TicketType } from "@/types/event";
 import ExpandableDescription from "@/components/event/ExpandableDescription";
 import EventSidebar from "@/components/event/EventSidebar";
 import EventMobileStickyBar from "@/components/event/EventMobileStickyBar";

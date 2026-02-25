@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import BookTicketsDialog from "./BookTicketsDialog";
-import type { TicketType } from "@/type/event";
+import type { TicketType } from "@/types/event";
 
 interface FormattedDate {
   day: string;

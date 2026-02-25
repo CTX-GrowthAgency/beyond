@@ -1,6 +1,18 @@
+import Head from 'next/head';
+
 export default function DisclaimerPage() {
   return (
     <>
+      <Head>
+        {/* ── SEO: Tell Google this is NOT the page to rank for your brand ── */}
+        <title>Disclaimer | Beyond</title>
+        <meta name="description" content="Legal disclaimer for the Beyond ticketing platform." />
+        {/* CRITICAL: noindex prevents this page from competing with your home page */}
+        <meta name="robots" content="noindex, nofollow" />
+        {/* Canonical points to itself — prevents duplicate indexing issues */}
+        <link rel="canonical" href="https://ctxgrowthagency.in/disclaimer" />
+      </Head>
+
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500&display=swap');
         .legal-root { min-height:100vh; background:#080808; color:#f0ede6; font-family:'DM Sans',sans-serif; }
@@ -70,7 +82,7 @@ export default function DisclaimerPage() {
         <div className="legal-body">
 
           {/* TOC */}
-          <nav className="legal-toc">
+          <nav className="legal-toc" aria-label="Page contents">
             <div className="legal-toc-label">Contents</div>
             <ol className="legal-toc-list">
               {[
@@ -100,7 +112,7 @@ export default function DisclaimerPage() {
               <div className="legal-section-number">01</div>
               <h2 className="legal-section-heading">Trial and Experimental Platform</h2>
               <div className="legal-section-divider" />
-              <p className="legal-p">BEYOND is currently operating in a trial, beta, and experimental phase ("Trial Phase"). The Platform is being tested for technical feasibility, user experience validation, and operational assessment.</p>
+              <p className="legal-p">BEYOND is currently operating in a trial, beta, and experimental phase (&quot;Trial Phase&quot;). The Platform is being tested for technical feasibility, user experience validation, and operational assessment.</p>
               <p className="legal-p">During this Trial Phase:</p>
               <ul className="legal-ul">
                 <li>Services may be modified, suspended, or discontinued without notice</li>
@@ -108,7 +120,7 @@ export default function DisclaimerPage() {
                 <li>Support may be limited or delayed</li>
                 <li>The Platform may not be available 24/7</li>
               </ul>
-              <p className="legal-p">Use of the Platform during Trial Phase involves inherent risks associated with experimental services. We make no guarantees of service availability, reliability, or fitness for any particular purpose.</p>
+              <p className="legal-p">Use of the Platform during the Trial Phase involves inherent risks associated with experimental services. We make no guarantees of service availability, reliability, or fitness for any particular purpose.</p>
             </section>
 
             {/* 2 */}
@@ -134,10 +146,10 @@ export default function DisclaimerPage() {
               <div className="legal-section-number">03</div>
               <h2 className="legal-section-heading">No Guarantees or Warranties</h2>
               <div className="legal-section-divider" />
-              <p className="legal-p" style={{textTransform:"uppercase", fontSize:13, letterSpacing:"0.02em", color:"rgba(240,237,230,0.55)", lineHeight:1.7}}>The platform and all services are provided "as is" and "as available" without any warranties, express or implied.</p>
+              <p className="legal-p" style={{textTransform:"uppercase", fontSize:13, letterSpacing:"0.02em", color:"rgba(240,237,230,0.55)", lineHeight:1.7}}>The platform and all services are provided &quot;as is&quot; and &quot;as available&quot; without any warranties, express or implied.</p>
               <p className="legal-p">We specifically disclaim:</p>
               <ul className="legal-ul">
-                <li>Warranties of merchantability, fitness for particular purpose</li>
+                <li>Warranties of merchantability or fitness for a particular purpose</li>
                 <li>Warranties of uninterrupted, error-free operation</li>
                 <li>Any warranties regarding event occurrence or quality</li>
               </ul>
@@ -165,7 +177,7 @@ export default function DisclaimerPage() {
               <div className="legal-section-number">05</div>
               <h2 className="legal-section-heading">Third-Party Service Dependencies</h2>
               <div className="legal-section-divider" />
-              <p className="legal-p">BEYOND relies on third-party services to operate. We are not responsible for failures, outages, security breaches, or policy changes of these providers. Users are subject to these providers' own terms and policies.</p>
+              <p className="legal-p">BEYOND relies on third-party services to operate. We are not responsible for failures, outages, security breaches, or policy changes of these providers. Users are subject to these providers&apos; own terms and policies.</p>
               <ul className="legal-ul">
                 <li><strong style={{color:"#f0ede6",fontWeight:500}}>Firebase (Google)</strong> — Hosting and database infrastructure</li>
                 <li><strong style={{color:"#f0ede6",fontWeight:500}}>Cashfree</strong> — Payment processing</li>

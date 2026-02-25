@@ -168,11 +168,6 @@ export default async function EventPage({
       ? Math.min(...event.ticketTypes.map((t: TicketType) => t.price))
       : null;
 
-    const mapsHref = event.googleMapsLink
-      ?? `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(
-          [event.venueName, event.venueAddress].filter(Boolean).join(", ")
-        )}`;
-
     return (
       <>
         <style>{`

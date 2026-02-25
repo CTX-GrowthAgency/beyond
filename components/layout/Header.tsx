@@ -8,6 +8,7 @@ import {
   getAuth,
   onAuthStateChanged,
   signInWithPopup,
+  signOut,
 } from "firebase/auth";
 import { app } from "@/lib/firebase/client";
 import { useRouter } from "next/navigation";
@@ -111,13 +112,26 @@ export default function Header({ user }: { user: HeaderUser | null }) {
   }
 
   async function handleLogout() {
+    setMenuOpen(false);
     try {
+      const auth = getAuth(app);
+
+      // 1. Sign out of Firebase client — MUST happen first so onAuthStateChanged
+      //    doesn't immediately re-hydrate the user after we clear the server cookie
+      await signOut(auth);
+
+      // 2. Clear the server-side session cookie
       await fetch("/api/auth/logout", { method: "POST" });
+
+      // 3. Clear local UI state
       setCurrentUser(null);
-      setMenuOpen(false);
+
+      // 4. Refresh to re-run server components with cleared session
       router.refresh();
     } catch (error) {
       console.error("Logout failed:", error);
+      // Even if something fails, clear local state so UI reflects logged-out
+      setCurrentUser(null);
     }
   }
 
@@ -129,11 +143,9 @@ export default function Header({ user }: { user: HeaderUser | null }) {
           top: 0;
           z-index: var(--z-index-sticky, 200);
           width: 100%;
-          /* Frosted glass — premium feel as you scroll over content */
           backdrop-filter: blur(20px) saturate(180%);
           -webkit-backdrop-filter: blur(20px) saturate(180%);
           background: rgba(2, 2, 2, 0.82);
-          /* Border starts invisible, fades in on scroll via .hdr-root--scrolled */
           border-bottom: 1px solid transparent;
           transition: border-color 250ms ease, background 250ms ease;
         }
@@ -151,7 +163,6 @@ export default function Header({ user }: { user: HeaderUser | null }) {
           padding-bottom: var(--spacing-4);
         }
 
-        /* Logo link — no opacity flicker on hover */
         .hdr-logo {
           display: inline-flex;
           align-items: center;
@@ -161,7 +172,6 @@ export default function Header({ user }: { user: HeaderUser | null }) {
         }
         .hdr-logo:hover { opacity: 0.7; }
 
-        /* ── Login button — ghost outlined, matches the dark system ── */
         .hdr-btn-login {
           display: inline-flex;
           align-items: center;
@@ -188,7 +198,7 @@ export default function Header({ user }: { user: HeaderUser | null }) {
           border-color: var(--color-text-on-dark-primary, #FAFAFA);
           background: rgba(255,255,255,0.05);
           transform: translateY(-1px);
-          opacity: 1; /* override global a:hover opacity */
+          opacity: 1;
         }
         .hdr-btn-login:active { transform: translateY(0); }
         .hdr-btn-login:disabled {
@@ -196,7 +206,6 @@ export default function Header({ user }: { user: HeaderUser | null }) {
           cursor: not-allowed;
         }
 
-        /* Small Google icon inside login button */
         .hdr-btn-login-icon {
           width: 22px;
           height: 22px;
@@ -204,7 +213,6 @@ export default function Header({ user }: { user: HeaderUser | null }) {
           opacity: 0.7;
         }
 
-        /* ── User chip — tighter, matches pill height ── */
         .hdr-user-chip {
           width: 60px;
           height: 60px;
@@ -232,7 +240,6 @@ export default function Header({ user }: { user: HeaderUser | null }) {
           background: var(--color-surface-on-dark-active, #161616);
         }
 
-        /* ── Dropdown menu ── */
         .hdr-menu {
           position: absolute;
           top: calc(100% + var(--spacing-2));
@@ -244,7 +251,6 @@ export default function Header({ user }: { user: HeaderUser | null }) {
           background: var(--color-surface-on-dark-base, #0A0A0A);
           box-shadow: 0 16px 40px rgba(0,0,0,0.6);
           z-index: var(--z-index-dropdown, 100);
-          /* Slide-in animation */
           animation: hdr-menu-in 0.16s cubic-bezier(0.22,1,0.36,1) both;
         }
         @keyframes hdr-menu-in {
@@ -287,7 +293,6 @@ export default function Header({ user }: { user: HeaderUser | null }) {
           background: var(--color-border-on-dark-subtle, #1F1F1F);
         }
 
-        /* Optional user info row at top of menu */
         .hdr-menu-user {
           padding: var(--spacing-3) var(--spacing-4) var(--spacing-2);
           pointer-events: none;
@@ -348,7 +353,6 @@ export default function Header({ user }: { user: HeaderUser | null }) {
 
               {menuOpen && (
                 <div className="hdr-menu" role="menu">
-                  {/* User info */}
                   {(currentUser?.name || currentUser?.email) && (
                     <>
                       <div className="hdr-menu-user">
@@ -392,7 +396,6 @@ export default function Header({ user }: { user: HeaderUser | null }) {
               disabled={isLoggingIn}
               aria-label="Sign in with Google"
             >
-              {/* Google G icon */}
               {!isLoggingIn && (
                 <svg className="hdr-btn-login-icon" viewBox="0 0 24 24" aria-hidden="true" fill="none">
                   <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>

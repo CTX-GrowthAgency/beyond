@@ -102,6 +102,7 @@ export default function PrivacyPolicyPage() {
                 ["#collect",    "Information We Collect"],
                 ["#use",        "How We Use It"],
                 ["#share",      "How We Share It"],
+                ["#payment",    "Payment Data"],
                 ["#security",   "Data Security"],
                 ["#retention",  "Data Retention"],
                 ["#rights",     "Your Rights"],
@@ -121,7 +122,7 @@ export default function PrivacyPolicyPage() {
           <div className="legal-content">
 
             <div className="legal-highlight">
-              <p>At BEYOND, we are committed to protecting your privacy and handling your personal information with care, transparency, and in compliance with applicable data protection laws in India. This Policy explains how we collect, use, store, and protect your information when you use our Platform.</p>
+              <p>At BEYOND, we are committed to protecting your privacy and handling your personal information with care, transparency, and in compliance with applicable data protection laws in India, including the Information Technology Act, 2000 and the Information Technology (Reasonable Security Practices and Procedures and Sensitive Personal Data or Information) Rules, 2011.</p>
             </div>
 
             <div className="legal-warning">
@@ -138,7 +139,7 @@ export default function PrivacyPolicyPage() {
               <div className="legal-data-grid">
                 {[
                   ["Account Information", "Name, email address, phone number, date of birth"],
-                  ["Payment Information", "Payment card details, UPI IDs, or other payment method information — processed securely through Cashfree Payments; we do not store complete card details"],
+                  ["Payment Information", "Payment method details processed securely through Cashfree Payments India Private Limited. BEYOND does not store, access, or retain complete card numbers, CVV, or UPI PINs."],
                   ["Booking Information", "Event preferences, ticket selections, attendee details"],
                   ["Communication Data", "Messages, support queries, feedback, and correspondence"],
                 ].map(([title, body]) => (
@@ -167,6 +168,7 @@ export default function PrivacyPolicyPage() {
               <p className="legal-p">We use your information for the following purposes:</p>
               <ul className="legal-ul">
                 <li><strong style={{color:"#f0ede6",fontWeight:500}}>Ticketing Services:</strong> Process bookings, generate tickets, facilitate event entry, manage your account</li>
+                <li><strong style={{color:"#f0ede6",fontWeight:500}}>Payment Processing:</strong> Facilitate secure payments through Cashfree Payments; share only the minimum data required by Cashfree to complete your transaction</li>
                 <li><strong style={{color:"#f0ede6",fontWeight:500}}>Communication:</strong> Send booking confirmations, event updates, important notifications, customer support responses</li>
                 <li><strong style={{color:"#f0ede6",fontWeight:500}}>Platform Improvement:</strong> Analyse usage patterns, fix bugs, enhance features, optimise performance</li>
                 <li><strong style={{color:"#f0ede6",fontWeight:500}}>Security:</strong> Prevent fraud, detect suspicious activity, enforce Terms and Conditions</li>
@@ -187,8 +189,10 @@ export default function PrivacyPolicyPage() {
               <ul className="legal-provider-list">
                 {[
                   ["Event Organisers", "Name, contact details, and booking information necessary for event management and entry"],
-                  ["Service Providers", "Payment processors (Cashfree), communication services (Wati), hosting providers (Firebase), analytics tools — bound by confidentiality obligations"],
-                  ["Legal Requirements", "When required by law, court order, or government authority"],
+                  ["Cashfree Payments", "Payment and transaction data necessary to process your booking securely. Cashfree Payments India Private Limited is a PCI-DSS compliant payment aggregator. Their privacy policy is available at cashfree.com/privacypolicy"],
+                  ["Firebase (Google)", "Infrastructure, database, and authentication data for platform operation"],
+                  ["Wati", "Phone number and booking details for WhatsApp-based communication and notifications"],
+                  ["Legal Requirements", "When required by law, court order, or government authority under applicable Indian law"],
                   ["Business Transfers", "In case of merger, acquisition, or sale of assets (with notice to affected users)"],
                 ].map(([badge, text]) => (
                   <li key={badge} className="legal-provider-item">
@@ -199,27 +203,45 @@ export default function PrivacyPolicyPage() {
               </ul>
             </section>
 
-            {/* 4 */}
-            <section id="security" className="legal-section">
+            {/* 4 — NEW CASHFREE-SPECIFIC SECTION */}
+            <section id="payment" className="legal-section">
               <div className="legal-section-number">04</div>
-              <h2 className="legal-section-heading">Data Security</h2>
+              <h2 className="legal-section-heading">Payment Data and Cashfree Payments</h2>
               <div className="legal-section-divider" />
-              <p className="legal-p">We implement reasonable security measures to protect your information, including:</p>
+              <p className="legal-p">All payment transactions on BEYOND are processed by <strong style={{color:"#f0ede6",fontWeight:500}}>Cashfree Payments India Private Limited</strong> (CIN: U72900KA2015PTC082987), a licensed payment aggregator regulated by the Reserve Bank of India.</p>
               <ul className="legal-ul">
-                <li>Encryption of data in transit (HTTPS / SSL)</li>
-                <li>Secure storage with Firebase's security infrastructure</li>
-                <li>Access controls and authentication mechanisms</li>
-                <li>Payment processing through PCI-DSS compliant gateway (Cashfree)</li>
-                <li>Regular security assessments and updates</li>
+                <li>BEYOND does not store, log, or have access to your complete card number, CVV, UPI PIN, or net banking credentials</li>
+                <li>Payment data is transmitted directly to Cashfree&apos;s PCI-DSS certified infrastructure</li>
+                <li>By making a payment, you agree to Cashfree&apos;s Terms and Privacy Policy available at <a href="https://www.cashfree.com/privacypolicy/" className="legal-link" target="_blank" rel="noopener noreferrer">cashfree.com/privacypolicy</a></li>
+                <li>Transaction records (amount, order ID, status) are retained by BEYOND for accounting and dispute resolution purposes</li>
+                <li>Refunds are processed through Cashfree back to your original payment method</li>
               </ul>
-              <div className="legal-warning">
-                <p>No system is completely secure. Given our Trial Phase status, we cannot guarantee absolute security. We encourage you to use strong passwords and protect your account credentials.</p>
+              <div className="legal-highlight">
+                <p>For payment-related grievances, you may also contact Cashfree directly at support@cashfree.com in addition to reaching BEYOND support.</p>
               </div>
             </section>
 
             {/* 5 */}
-            <section id="retention" className="legal-section">
+            <section id="security" className="legal-section">
               <div className="legal-section-number">05</div>
+              <h2 className="legal-section-heading">Data Security</h2>
+              <div className="legal-section-divider" />
+              <p className="legal-p">We implement reasonable security measures to protect your information, including:</p>
+              <ul className="legal-ul">
+                <li>Encryption of data in transit (HTTPS / SSL / TLS)</li>
+                <li>Secure storage with Firebase&apos;s security infrastructure (Google Cloud)</li>
+                <li>Access controls and Firebase Authentication for user accounts</li>
+                <li>Payment processing through PCI-DSS compliant gateway (Cashfree Payments)</li>
+                <li>Regular security assessments and updates</li>
+              </ul>
+              <div className="legal-warning">
+                <p>No system is completely secure. Given our Trial Phase status, we cannot guarantee absolute security. We encourage you to use strong passwords, never share your OTP with anyone, and protect your account credentials. BEYOND and Cashfree will never ask for your card CVV or OTP over phone or email.</p>
+              </div>
+            </section>
+
+            {/* 6 */}
+            <section id="retention" className="legal-section">
+              <div className="legal-section-number">06</div>
               <h2 className="legal-section-heading">Data Retention</h2>
               <div className="legal-section-divider" />
               <p className="legal-p">We retain your information for as long as necessary to:</p>
@@ -230,13 +252,13 @@ export default function PrivacyPolicyPage() {
                 <li>Support legitimate business purposes</li>
               </ul>
               <div className="legal-highlight">
-                <p>Certain transaction and communication records may be retained for compliance with legal, audit, or dispute-resolution requirements even after account deletion requests. You may request deletion of your data by contacting us. We will comply unless retention is required by law or legitimate business need.</p>
+                <p>Transaction records may be retained for up to 5 years for compliance with Indian accounting and tax laws. You may request deletion of your data by contacting us. We will comply unless retention is required by law or legitimate business need.</p>
               </div>
             </section>
 
-            {/* 6 */}
+            {/* 7 */}
             <section id="rights" className="legal-section">
-              <div className="legal-section-number">06</div>
+              <div className="legal-section-number">07</div>
               <h2 className="legal-section-heading">Your Rights and Choices</h2>
               <div className="legal-section-divider" />
               <p className="legal-p">You have the following rights regarding your personal information:</p>
@@ -245,9 +267,9 @@ export default function PrivacyPolicyPage() {
                   ["📋", "Access", "Request a copy of your personal data"],
                   ["✏️", "Correction", "Update or correct inaccurate information"],
                   ["🗑️", "Deletion", "Request deletion of your data, subject to legal obligations"],
-                  ["🔕", "Opt-Out", "Unsubscribe from marketing communications"],
+                  ["🔕", "Opt-Out", "Unsubscribe from marketing communications at any time"],
                   ["📦", "Portability", "Receive your data in a structured, machine-readable format"],
-                  ["🔒", "Security", "Maintain the security of your account credentials"],
+                  ["🔒", "Security", "Withdraw consent for non-essential data processing"],
                 ].map(([icon, title, desc]) => (
                   <div key={title} className="legal-right-item">
                     <div className="legal-right-icon">{icon}</div>
@@ -256,35 +278,35 @@ export default function PrivacyPolicyPage() {
                   </div>
                 ))}
               </div>
-              <p className="legal-p" style={{marginTop:12}}>To exercise these rights, contact us at <a href="mailto:support@beyond.ctxgrowthagency.in" className="legal-link">support@beyond.ctxgrowthagency.in</a></p>
+              <p className="legal-p" style={{marginTop:12}}>To exercise these rights, contact us at <a href="mailto:contactbeyondteam@gmail.com" className="legal-link">contactbeyondteam@gmail.com</a> with subject line <strong style={{color:"#f0ede6",fontWeight:500}}>&quot;Privacy Request&quot;</strong>. We will respond within 30 days.</p>
             </section>
 
-            {/* 7 */}
+            {/* 8 */}
             <section id="cookies" className="legal-section">
-              <div className="legal-section-number">07</div>
+              <div className="legal-section-number">08</div>
               <h2 className="legal-section-heading">Cookies and Tracking Technologies</h2>
               <div className="legal-section-divider" />
               <p className="legal-p">We use cookies and similar technologies for:</p>
               <ul className="legal-ul">
-                <li>Authentication and session management</li>
+                <li>Authentication and session management (required for login)</li>
                 <li>Remembering preferences and settings</li>
-                <li>Analytics and usage measurement</li>
+                <li>Analytics and usage measurement (Firebase Analytics)</li>
                 <li>Security and fraud prevention</li>
               </ul>
-              <p className="legal-p">You can control cookies through your browser settings. Note that disabling cookies may affect Platform functionality.</p>
+              <p className="legal-p">You can control cookies through your browser settings. Note that disabling essential cookies may affect Platform functionality including login and checkout.</p>
             </section>
 
-            {/* 8 */}
+            {/* 9 */}
             <section id="thirdparty" className="legal-section">
-              <div className="legal-section-number">08</div>
+              <div className="legal-section-number">09</div>
               <h2 className="legal-section-heading">Third-Party Services and Links</h2>
               <div className="legal-section-divider" />
-              <p className="legal-p">Our Platform integrates with the following third-party services to operate:</p>
+              <p className="legal-p">Our Platform integrates with the following third-party services:</p>
               <ul className="legal-provider-list">
                 {[
-                  ["Firebase (Google)", "Hosting, database infrastructure, and authentication"],
-                  ["Cashfree Payments", "Secure payment processing — PCI-DSS compliant"],
-                  ["Wati", "WhatsApp-based communication and notifications"],
+                  ["Firebase (Google)", "Hosting, database infrastructure, and authentication — Google's Privacy Policy applies"],
+                  ["Cashfree Payments", "Secure payment processing — PCI-DSS compliant. cashfree.com/privacypolicy"],
+                  ["Wati", "WhatsApp-based communication and booking notifications"],
                 ].map(([badge, text]) => (
                   <li key={badge} className="legal-provider-item">
                     <span className="legal-provider-badge">{badge}</span>
@@ -292,34 +314,34 @@ export default function PrivacyPolicyPage() {
                   </li>
                 ))}
               </ul>
-              <p className="legal-p">Our Platform may also contain links to third-party websites. We are not responsible for the privacy practices of these external sites and encourage you to review their privacy policies.</p>
-            </section>
-
-            {/* 9 */}
-            <section id="children" className="legal-section">
-              <div className="legal-section-number">09</div>
-              <h2 className="legal-section-heading">Children's Privacy</h2>
-              <div className="legal-section-divider" />
-              <p className="legal-p">BEYOND is not intended for children under 18. We do not knowingly collect information from children. If you believe we have inadvertently collected such information, please contact us immediately for deletion.</p>
+              <p className="legal-p">Our Platform may also contain links to third-party websites. We are not responsible for the privacy practices of these external sites and encourage you to review their privacy policies independently.</p>
             </section>
 
             {/* 10 */}
-            <section id="changes" className="legal-section">
+            <section id="children" className="legal-section">
               <div className="legal-section-number">10</div>
-              <h2 className="legal-section-heading">Changes to This Privacy Policy</h2>
+              <h2 className="legal-section-heading">Children&apos;s Privacy</h2>
               <div className="legal-section-divider" />
-              <p className="legal-p">We may update this Privacy Policy periodically. Material changes will be communicated via email or Platform notification. Continued use of the Platform after changes indicates your acceptance of the revised Policy.</p>
+              <p className="legal-p">BEYOND is not intended for children under 18. We do not knowingly collect information from minors. If you believe we have inadvertently collected such information, please contact us immediately at <a href="mailto:contactbeyondteam@gmail.com" className="legal-link">contactbeyondteam@gmail.com</a> for deletion.</p>
             </section>
 
             {/* 11 */}
-            <section id="contact" className="legal-section">
+            <section id="changes" className="legal-section">
               <div className="legal-section-number">11</div>
+              <h2 className="legal-section-heading">Changes to This Privacy Policy</h2>
+              <div className="legal-section-divider" />
+              <p className="legal-p">We may update this Privacy Policy periodically. Material changes will be communicated via email or Platform notification at least 7 days before they take effect. Continued use of the Platform after changes indicates your acceptance of the revised Policy.</p>
+            </section>
+
+            {/* 12 */}
+            <section id="contact" className="legal-section">
+              <div className="legal-section-number">12</div>
               <h2 className="legal-section-heading">Contact Information</h2>
               <div className="legal-section-divider" />
               <p className="legal-p">For privacy-related questions, concerns, or requests:</p>
               <div className="legal-contact-card">
                 <p><strong style={{color:"#f0ede6"}}>Beyond Support Team</strong></p>
-                <p>Email: <a href="mailto:ctxgrowthagency@gmail.com" className="legal-link">ctxgrowthagency@gmail.com</a></p>
+                <p>Email: <a href="mailto:contactbeyondteam@gmail.com" className="legal-link">contactbeyondteam@gmail.com</a></p>
                 <p>Subject Line: <span style={{color:"rgba(240,237,230,0.5)"}}>Privacy Inquiry</span></p>
                 <p>WhatsApp: <a href="https://wa.me/919699517508" className="legal-link">+91 96995 17508</a></p>
                 <p>Website: <a href="https://ctxgrowthagency.in" className="legal-link">ctxgrowthagency.in</a></p>
@@ -333,7 +355,8 @@ export default function PrivacyPolicyPage() {
         <div className="legal-footer">
           <span className="legal-footer-text">© {new Date().getFullYear()} Beyond. All rights reserved.</span>
           <div className="legal-footer-links">
-            <a href="/terms">Terms &amp; Conditions</a>
+            <a href="/terms_and_conditions">Terms &amp; Conditions</a>
+            <a href="/refund_policy">Refund Policy</a>
             <a href="/disclaimer">Disclaimer</a>
           </div>
         </div>

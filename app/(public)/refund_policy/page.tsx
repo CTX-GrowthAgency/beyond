@@ -355,16 +355,6 @@ export default function RefundPolicyPage() {
 
           </div>
         </div>
-
-        <div className="legal-footer">
-          <span className="legal-footer-text">© {new Date().getFullYear()} Beyond. All rights reserved.</span>
-          <div className="legal-footer-links">
-            <a href="/terms_and_conditions">Terms &amp; Conditions</a>
-            <a href="/privacy_policy">Privacy Policy</a>
-            <a href="/disclaimer">Disclaimer</a>
-          </div>
-        </div>
-
       </div>
     </>
   );

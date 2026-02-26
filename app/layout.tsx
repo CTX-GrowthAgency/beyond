@@ -7,12 +7,12 @@ export const metadata: Metadata = {
 
   icons: {
     icon: [
-      { url: '/favicon-16x16.png', sizes: '16x16', type: 'image/png' },
-      { url: '/favicon-32x32.png', sizes: '32x32', type: 'image/png' },
+      { url: "/favicon-16x16.png", sizes: "16x16", type: "image/png" },
+      { url: "/favicon-32x32.png", sizes: "32x32", type: "image/png" },
     ],
-    apple: '/apple-touch-icon.png',
+    apple: "/apple-touch-icon.png",
   },
-  manifest: '/site.webmanifest',
+  manifest: "/site.webmanifest",
 
   title: {
     default: "Beyond | Book Event Tickets Online",
@@ -45,6 +45,14 @@ export const metadata: Metadata = {
     siteName: "Beyond",
     locale: "en_IN",
     type: "website",
+    images: [
+      {
+        url: "/og.webp",
+        width: 1200,
+        height: 630,
+        alt: "Beyond - Book Event Tickets Online",
+      },
+    ],
   },
 
   twitter: {
@@ -52,6 +60,7 @@ export const metadata: Metadata = {
     title: "Beyond | Book Event Tickets Online",
     description:
       "Book concerts, festivals & premium experiences instantly with Beyond.",
+    images: ["/og.webp"],
   },
 
   robots: {

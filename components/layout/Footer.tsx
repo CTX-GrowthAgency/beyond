@@ -160,7 +160,7 @@ export default function Footer() {
         }
         .ftr-legal {
           font-size: 11px;
-          color: var(--color-text-on-dark-muted, #6F6F6F);
+          color: var(--color-white);
           line-height: 1.7;
           max-width: 560px;
           font-weight: 300;
@@ -284,7 +284,8 @@ export default function Footer() {
             {/* Nav links */}
             <nav aria-label="Footer navigation">
               <div className="ftr-nav">
-                <Link href="/terms_and_conditions" className="ftr-nav-link">Refund Policy</Link>
+                <Link href="/about" className="ftr-nav-link">About Us</Link>
+                <Link href="/refund_policy" className="ftr-nav-link">Refund Policy</Link>
                 <Link href="/terms_and_conditions" className="ftr-nav-link">Terms & Conditions</Link>
                 <Link href="/privacy_policy" className="ftr-nav-link">Privacy Policy</Link>
                 <Link href="/disclaimer" className="ftr-nav-link">Disclaimer</Link>
@@ -303,6 +304,10 @@ export default function Footer() {
               and agree to our{" "}
               <Link href="/refund_policy" style={{ color: "inherit", borderBottom: "1px solid rgba(255,255,255,0.15)" }}>
               Refund Policy
+              </Link>
+              ,{" "}
+              <Link href="/terms_and_conditions" style={{ color: "inherit", borderBottom: "1px solid rgba(255,255,255,0.15)" }}>
+                Disclaimer
               </Link>
               ,{" "}
               <Link href="/terms_and_conditions" style={{ color: "inherit", borderBottom: "1px solid rgba(255,255,255,0.15)" }}>

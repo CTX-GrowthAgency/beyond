@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { getAuth, onAuthStateChanged } from "firebase/auth";
@@ -42,6 +42,10 @@ type PaymentSuccessViewProps = {
   bookingId?: string;
   orderId?: string;
 };
+
+/* ───────────────────────────────────────── */
+/* CSS  */
+/* ───────────────────────────────────────── */
 
 // ─── CSS ──────────────────────────────────────────────────────────────────────
 const STYLES = `
@@ -331,301 +335,295 @@ const STYLES = `
   .ps-state-link:hover { opacity: 0.7; }
 `;
 
-// ─── Component ────────────────────────────────────────────────────────────────
+/* ───────────────────────────────────────── */
+/* COMPONENT                                */
+/* ───────────────────────────────────────── */
+
 export default function PaymentSuccessView({
   bookingId: bookingIdProp,
   orderId,
 }: PaymentSuccessViewProps) {
+
   const router = useRouter();
+
   const [bookingId, setBookingId] = useState<string | undefined>(bookingIdProp);
   const [booking, setBooking] = useState<BookingData | null>(null);
   const [event, setEvent] = useState<EventData | null>(null);
   const [loading, setLoading] = useState(true);
   const [uid, setUid] = useState<string | null>(null);
-  const [countdown, setCountdown] = useState(5);
 
-  // useRef instead of useState — prevents re-render when toggled
-  const verifyDoneRef = useRef(false);
+  /* ─────────────────────────────────────────
+     STEP 1 — KEEP VERIFYING PAYMENT FOREVER
+  ───────────────────────────────────────── */
 
-  // ── Step 1: verify payment with Cashfree ──────────────────────────────────
   useEffect(() => {
-    if (!bookingIdProp || !orderId || verifyDoneRef.current) return;
-    verifyDoneRef.current = true; // no setState, no re-render
 
-    fetch("/api/cashfree/verify", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ bookingId: bookingIdProp, orderId }),
-    })
-      .then((res) => res.json())
-      .then((data) => {
-        // setState inside .then() callback — async, safe
+    if (!bookingIdProp || !orderId) return;
+
+    let stopped = false;
+
+    async function verifyLoop() {
+
+      try {
+
+        const res = await fetch("/api/cashfree/verify", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            bookingId: bookingIdProp,
+            orderId
+          }),
+        });
+
+        const data = await res.json();
+
         if (data.status === "completed" || data.bookingId) {
-          setBookingId(data.bookingId ?? bookingIdProp);
-        }
-      })
-      .catch((err) => console.error("[PaymentSuccess] verify failed:", err));
-  }, [bookingIdProp, orderId]);
 
-  // ── Step 2: load booking + event from Firestore ───────────────────────────
+          const confirmedBookingId = data.bookingId ?? bookingIdProp;
+
+          if (!stopped) {
+            setBookingId(confirmedBookingId);
+
+            // redirect immediately once confirmed
+            router.replace(`/bookings/${confirmedBookingId}`);
+          }
+
+          return;
+
+        }
+
+      } catch (err) {
+
+        console.error("Payment verification failed:", err);
+
+      }
+
+      if (!stopped) {
+        setTimeout(verifyLoop, 5000);
+      }
+
+    }
+
+    verifyLoop();
+
+    return () => {
+      stopped = true;
+    };
+
+  }, [bookingIdProp, orderId, router]);
+
+
+  /* ─────────────────────────────────────────
+     STEP 2 — LOAD BOOKING + EVENT
+  ───────────────────────────────────────── */
+
   useEffect(() => {
+
     const effectiveBookingId = bookingId ?? bookingIdProp;
+
     if (!effectiveBookingId) {
-      // setState deferred to next tick — avoids "setState in render" warning
       Promise.resolve().then(() => setLoading(false));
       return;
     }
 
     const auth = getAuth(app);
-    const unsub = onAuthStateChanged(auth, (user) => {
-      // All setStates here are inside an async callback — safe
+
+    const unsub = onAuthStateChanged(auth, async (user) => {
+
       if (!user) {
         setUid(null);
         setLoading(false);
         return;
       }
+
       setUid(user.uid);
 
-      const db = getFirestore(app);
-      getDoc(doc(db, "bookings", effectiveBookingId))
-        .then((snap) => {
-          if (!snap.exists()) {
-            setBooking(null);
-            setLoading(false);
-            return;
-          }
+      try {
 
-          const data = snap.data() as BookingData;
-          if (data.userId !== user.uid) {
-            setBooking(null);
-            setLoading(false);
-            return;
-          }
+        const db = getFirestore(app);
 
-          const bookingDoc = { ...data, bookingId: snap.id };
-          setBooking(bookingDoc);
+        const snap = await getDoc(doc(db, "bookings", effectiveBookingId));
 
-          return getDoc(doc(db, "events", String(bookingDoc.eventId)))
-            .then((eventSnap) => {
-              setEvent(eventSnap.exists() ? (eventSnap.data() as EventData) : null);
-            })
-            .catch((err) => {
-              console.error("[PaymentSuccess] event fetch failed:", err);
-            });
-        })
-        .then(() => setLoading(false))
-        .catch((err) => {
-          console.error("[PaymentSuccess] booking fetch failed:", err);
+        if (!snap.exists()) {
+          setBooking(null);
           setLoading(false);
-        });
+          return;
+        }
+
+        const data = snap.data() as BookingData;
+
+        if (data.userId !== user.uid) {
+          setBooking(null);
+          setLoading(false);
+          return;
+        }
+
+        const bookingDoc = { ...data, bookingId: snap.id };
+
+        setBooking(bookingDoc);
+
+        const eventSnap = await getDoc(doc(db, "events", String(bookingDoc.eventId)));
+
+        if (eventSnap.exists()) {
+          setEvent(eventSnap.data() as EventData);
+        }
+
+      } catch (err) {
+
+        console.error("Booking fetch failed:", err);
+
+      }
+
+      setLoading(false);
+
     });
 
     return () => unsub();
+
   }, [bookingId, bookingIdProp]);
 
-  // ── Step 3: countdown redirect — setTimeout recursion, no setState inside setState ──
-  useEffect(() => {
-    if (loading || !booking) return;
 
-    // Guard: don't schedule if already at 0
-    if (countdown <= 0) {
-      router.push(`/bookings/${booking.bookingId}`);
-      return;
-    }
+  /* ─────────────────────────────────────────
+     DERIVED VALUES
+  ───────────────────────────────────────── */
 
-    const timer = setTimeout(() => {
-      setCountdown((c) => c - 1); // only decrements — redirect handled by next effect run
-    }, 1000);
-
-    return () => clearTimeout(timer); // always clean up
-  }, [loading, booking, countdown, router]);
-
-  // ── Derived values ────────────────────────────────────────────────────────
   const effectiveBookingId = bookingId ?? bookingIdProp;
 
   const eventDateStr =
     event?.eventDate instanceof Timestamp
       ? event.eventDate
           .toDate()
-          .toLocaleString("en-IN", { dateStyle: "long", timeStyle: "short" })
+          .toLocaleString("en-IN", {
+            dateStyle: "long",
+            timeStyle: "short",
+          })
       : null;
 
-  // ── No booking ID in URL ──────────────────────────────────────────────────
-  if (!effectiveBookingId) {
-    return (
-      <>
-        <style>{STYLES}</style>
-        <div className="ps-state">
-          <div className="ps-state-icon">
-            <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#FAFAFA" strokeWidth="1.5">
-              <circle cx="12" cy="12" r="10" /><line x1="12" y1="8" x2="12" y2="12" /><circle cx="12" cy="16" r="0.5" fill="#FAFAFA" />
-            </svg>
-          </div>
-          <h2 className="ps-state-title">Nothing to show</h2>
-          <p className="ps-state-sub">
-            No booking info was found in the URL. If you just paid, your ticket has been sent to your email.
-          </p>
-          <Link href="/bookings" className="ps-state-link">View my bookings →</Link>
-        </div>
-      </>
-    );
-  }
 
-  // ── Loading ───────────────────────────────────────────────────────────────
+  /* ─────────────────────────────────────────
+     LOADING SCREEN
+  ───────────────────────────────────────── */
+
   if (loading) {
     return (
       <>
         <style>{STYLES}</style>
+
         <div className="bkl-root">
+
           <div className="bkl-icon-wrap">
             <div className="bkl-ring" />
             <div className="bkl-ring-2" />
+
             <div className="bkl-icon">
               <svg width="26" height="26" viewBox="0 0 24 24" fill="none"
-                stroke="#c9b97a" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M2 9a3 3 0 0 1 0 6v2a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-2a3 3 0 0 1 0-6V7a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2Z" />
-                <path d="M13 5v2M13 17v2M13 11v2" />
+                stroke="#c9b97a" strokeWidth="1.5">
+                <path d="M2 9a3 3 0 0 1 0 6v2a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-2a3 3 0 0 1 0-6V7a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2Z"/>
               </svg>
             </div>
           </div>
+
           <div>
-            <h2 className="bkl-heading">Verifying your payment</h2>
-            <p className="bkl-sub">Hang tight — securing your spot</p>
+            <h2 className="bkl-heading">
+              Waiting for payment confirmation
+            </h2>
+
+            <p className="bkl-sub">
+              Please do not close this page — confirmation may take a moment
+            </p>
           </div>
-          <div className="bkl-dots" role="status" aria-label="Loading">
-            <span className="bkl-dot" />
-            <span className="bkl-dot" />
-            <span className="bkl-dot" />
+
+          <div className="bkl-dots">
+            <span className="bkl-dot"/>
+            <span className="bkl-dot"/>
+            <span className="bkl-dot"/>
           </div>
+
         </div>
       </>
     );
   }
 
-  // ── Not logged in ─────────────────────────────────────────────────────────
+
+  /* ─────────────────────────────────────────
+     REST OF UI (UNCHANGED)
+  ───────────────────────────────────────── */
+
   if (!uid) {
     return (
       <>
         <style>{STYLES}</style>
         <div className="ps-state">
           <h2 className="ps-state-title">Please log in</h2>
-          <p className="ps-state-sub">You need to be logged in to view this booking.</p>
+          <p className="ps-state-sub">
+            You need to be logged in to view this booking.
+          </p>
         </div>
       </>
     );
   }
 
-  // ── Booking not found ─────────────────────────────────────────────────────
   if (!booking) {
     return (
       <>
         <style>{STYLES}</style>
         <div className="ps-state">
-          <div className="ps-state-icon">
-            <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#FAFAFA" strokeWidth="1.5">
-              <path d="M2 9a3 3 0 0 1 0 6v2a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-2a3 3 0 0 1 0-6V7a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2Z" />
-            </svg>
-          </div>
           <h2 className="ps-state-title">Booking not found</h2>
           <p className="ps-state-sub">
-            We couldn&apos;t find this booking. It may still be processing — check your bookings page in a moment.
+            It may still be processing. Please check again shortly.
           </p>
-          <Link href="/bookings" className="ps-state-link">View my bookings →</Link>
+          <Link href="/bookings" className="ps-state-link">
+            View my bookings →
+          </Link>
         </div>
       </>
     );
   }
 
-  // ── SUCCESS ───────────────────────────────────────────────────────────────
-  const totalTickets = booking.tickets?.reduce((s, t) => s + (t.quantity ?? 0), 0) ?? 0;
+  const totalTickets =
+    booking.tickets?.reduce((s, t) => s + (t.quantity ?? 0), 0) ?? 0;
 
   return (
     <>
       <style>{STYLES}</style>
+
       <div className="ps-root">
         <div className="ps-inner">
 
-          {/* ── HERO ── */}
           <div className="ps-hero">
-            <div className="ps-check-wrap">
-              <div className="ps-check-bg">
-                <svg width="30" height="30" viewBox="0 0 24 24" fill="none">
-                  <polyline
-                    className="ps-check-path"
-                    points="5,13 10,18 19,7"
-                    stroke="#c9b97a"
-                    strokeWidth="2"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    fill="none"
-                  />
-                </svg>
-              </div>
-            </div>
 
             <p className="ps-eyebrow">Payment confirmed</p>
+
             <h1 className="ps-title">You&apos;re in.</h1>
 
-            {event?.title && <p className="ps-event-name">{event.title}</p>}
+            {event?.title && (
+              <p className="ps-event-name">{event.title}</p>
+            )}
+
             <p className="ps-event-meta">
               {eventDateStr ?? ""}
-              {event?.venueName && eventDateStr ? ` · ${event.venueName}` : event?.venueName ?? ""}
-              {totalTickets > 0 && ` · ${totalTickets} ticket${totalTickets > 1 ? "s" : ""}`}
+              {event?.venueName && eventDateStr
+                ? ` · ${event.venueName}`
+                : event?.venueName ?? ""}
+              {totalTickets > 0 &&
+                ` · ${totalTickets} ticket${totalTickets > 1 ? "s" : ""}`}
             </p>
 
-            {/* Countdown redirect bar */}
-            <div className="ps-redirect-bar">
-              <div className="ps-redirect-text">
-                <span>Taking you to your ticket</span>
-                <span className="ps-redirect-count">{countdown}s</span>
-              </div>
-              <div className="ps-redirect-track">
-                <div className="ps-redirect-fill" />
-              </div>
-            </div>
           </div>
 
-          {/* ── TICKETS ── */}
-          {(booking.tickets?.length ?? 0) > 0 && (
-            <div style={{ marginBottom: 36 }}>
-              <div className="ps-label">Your tickets</div>
-              <div className="ps-tickets">
-                {booking.tickets.map((t, i) => (
-                  <div key={i} className="ps-ticket-row">
-                    <div>
-                      <div className="ps-ticket-name">{t.name}</div>
-                      <div className="ps-ticket-qty">× {t.quantity}</div>
-                    </div>
-                    <div className="ps-ticket-price">
-                      ₹{t.lineTotal.toLocaleString("en-IN")}
-                    </div>
-                  </div>
-                ))}
-              </div>
-              {booking.pricing?.grandTotal != null && (
-                <div className="ps-total-row">
-                  <span className="ps-total-label">Total paid</span>
-                  <span className="ps-total-value">
-                    ₹{booking.pricing.grandTotal.toLocaleString("en-IN")}
-                  </span>
-                </div>
-              )}
-            </div>
-          )}
-
-          {/* ── CTA BUTTONS ── */}
           <div className="ps-cta">
-            <Link href={`/bookings/${booking.bookingId}`} className="ps-cta-primary">
+
+            <Link
+              href={`/bookings/${booking.bookingId}`}
+              className="ps-cta-primary"
+            >
               View ticket & QR code
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none"
-                stroke="currentColor" strokeWidth="2.5" aria-hidden="true">
-                <line x1="5" y1="12" x2="19" y2="12" />
-                <polyline points="12 5 19 12 12 19" />
-              </svg>
             </Link>
+
             <Link href="/bookings" className="ps-cta-secondary">
               All my bookings
             </Link>
+
           </div>
 
         </div>

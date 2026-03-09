@@ -33,6 +33,18 @@ export interface CheckoutClientProps {
   eventSanityId: string;
 }
 
+interface CashfreeInstance {
+  checkout: (options: { paymentSessionId: string; redirectTarget: string }) => void;
+}
+
+interface CashfreeConstructor {
+  (options: { mode: "sandbox" | "production" }): CashfreeInstance;
+}
+
+interface CashfreeWindow extends Window {
+  Cashfree?: CashfreeConstructor;
+}
+
 // ─── Indian States ────────────────────────────────────────────────────────────
 
 const INDIAN_STATES = [
@@ -125,9 +137,6 @@ export default function CheckoutClient({
 
   // ── Derived totals ──────────────────────────────────────────────────────────
   const subtotal = ticketSelections.reduce((s, t) => s + t.price * t.quantity, 0);
-  // TODO: enable fees in future
-  // const convenienceFee = Math.round(subtotal * 0.02);
-  // const gst = Math.round(subtotal * 0.18);
   const convenienceFee = 0;
   const gst = 0;
   const grandTotal = subtotal + convenienceFee + gst;
@@ -171,7 +180,7 @@ export default function CheckoutClient({
     try {
       const db = getFirestore(app);
 
-      // 1. Upsert user — only profile fields, no event data
+      // 1. Upsert user
       const userRef = doc(db, "users", userId);
       const userSnap = await getDoc(userRef);
       await setDoc(
@@ -189,8 +198,7 @@ export default function CheckoutClient({
         { merge: true }
       );
 
-      // 2. Ensure event stub exists in Firestore (keyed by Sanity _id)
-      //    Only writes if the doc doesn't already exist — avoids overwriting.
+      // 2. Ensure event stub exists
       const eventRef = doc(db, "events", eventSanityId);
       const eventSnap = await getDoc(eventRef);
       if (!eventSnap.exists()) {
@@ -216,13 +224,9 @@ export default function CheckoutClient({
 
       await setDoc(bookingRef, {
         bookingId: newBookingId,
-
-        // References
         userId,
         eventId: eventSanityId,
         eventSlug: slug,
-
-        // Ticket breakdown
         tickets: ticketSelections
           .filter((t) => t.quantity > 0)
           .map((t) => ({
@@ -232,29 +236,21 @@ export default function CheckoutClient({
             quantity: t.quantity,
             lineTotal: t.price * t.quantity,
           })),
-
-        // Pricing
         pricing: {
           subtotal,
-          convenienceFee,  // 0 for now
-          gst,             // 0 for now
+          convenienceFee,
+          gst,
           grandTotal,
         },
-
-        // Payment lifecycle: pending_payment → completed | failed
         paymentStatus: "pending_payment",
         cashfreeOrderId: "",
-        paymentMethod: null,      // filled after gateway callback
-        paymentReference: null,   // Cashfree order_id
+        paymentMethod: null,
+        paymentReference: null,
         paidAt: null,
-
         verifiedAt: null,
         notificationSentAt: null,
         expiresAt: Timestamp.fromMillis(Date.now() + 10 * 60 * 1000),
-
-        // Ticket lifecycle: pending → issued → used → cancelled
         ticketStatus: "pending",
-
         createdAt: serverTimestamp(),
         updatedAt: serverTimestamp(),
       });
@@ -269,17 +265,17 @@ export default function CheckoutClient({
     }
   }
 
-  // ── Load Cashfree SDK (required for checkout) ────────────────────────────────
+  // ── Load Cashfree SDK ────────────────────────────────────────────────────────
   const CASHFREE_SDK = "https://sdk.cashfree.com/js/v3/cashfree.js";
 
   function loadCashfreeSDK(): Promise<void> {
     if (typeof window === "undefined") return Promise.reject(new Error("Not in browser"));
-    const w = window as any;
+    const w = window as CashfreeWindow;
     if (w.Cashfree) return Promise.resolve();
-    const existing = document.querySelector(`script[src="${CASHFREE_SDK}"]`);
+    const existing = document.querySelector<HTMLScriptElement>(`script[src="${CASHFREE_SDK}"]`);
     if (existing) {
       return new Promise((resolve) => {
-        if (w.Cashfree) resolve();
+        if ((window as CashfreeWindow).Cashfree) resolve();
         else existing.addEventListener("load", () => resolve());
       });
     }
@@ -312,7 +308,7 @@ export default function CheckoutClient({
         }),
       });
 
-      const data = await res.json();
+      const data = await res.json() as { payment_session_id?: string; message?: string; error?: string };
 
       if (!res.ok) {
         const raw = data?.message || data?.error || "Payment initialisation failed.";
@@ -337,13 +333,13 @@ export default function CheckoutClient({
 
       await loadCashfreeSDK();
 
-      const Cashfree = (window as any).Cashfree;
-      if (!Cashfree) {
+      const CashfreeCtor = (window as CashfreeWindow).Cashfree;
+      if (!CashfreeCtor) {
         alert("Could not load payment gateway. Please refresh and try again.");
         return;
       }
 
-      const cashfree = Cashfree({
+      const cashfree = CashfreeCtor({
         mode: process.env.NEXT_PUBLIC_CASHFREE_ENV === "production" ? "production" : "sandbox",
       });
 
@@ -1050,23 +1046,12 @@ export default function CheckoutClient({
                   <span>Order Amount ({totalTickets} ticket{totalTickets !== 1 ? "s" : ""})</span>
                   <span>₹{subtotal.toLocaleString("en-IN")}</span>
                 </div>
-                {/* TODO: uncomment when fees are enabled
-                <div className="ck-pricing-row">
-                  <span>Convenience Fee (2%)</span>
-                  <span>₹{convenienceFee.toLocaleString("en-IN")}</span>
-                </div>
-                <div className="ck-pricing-row">
-                  <span>GST (18%)</span>
-                  <span>₹{gst.toLocaleString("en-IN")}</span>
-                </div>
-                */}
                 <div className="ck-pricing-row total">
                   <span>Grand Total</span>
                   <span className="ck-price-val">₹{grandTotal.toLocaleString("en-IN")}</span>
                 </div>
               </div>
 
-              {/* Single payment CTA — gated on form completeness */}
               <button
                 className="ck-pay-btn"
                 disabled={!formReady || submitting}
@@ -1108,3 +1093,9 @@ export default function CheckoutClient({
     </>
   );
 }
+
+
+
+
+
+

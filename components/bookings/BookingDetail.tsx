@@ -116,6 +116,8 @@ export default function BookingDetail({ bookingId }: { bookingId: string }) {
   const [uid, setUid]             = useState<string | null>(null);
   const [sending, setSending]     = useState(false);
   const [sendStatus, setSendStatus] = useState<"idle" | "sending" | "sent" | "error">("idle");
+  const [recheckingPayment, setRecheckingPayment] = useState(false);
+  const [paymentMessage, setPaymentMessage] = useState<string | null>(null);
 
   useEffect(() => {
     const auth = getAuth(app);
@@ -162,6 +164,42 @@ export default function BookingDetail({ bookingId }: { bookingId: string }) {
       setSendStatus("error");
     } finally {
       setSending(false);
+    }
+  }
+
+  async function handleRecheckPayment() {
+    if (!booking || recheckingPayment) return;
+    setRecheckingPayment(true);
+    setPaymentMessage(null);
+    
+    try {
+      const res = await fetch(`/api/bookings/${booking.bookingId}/recheck-payment`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+      });
+      
+      const data = await res.json();
+      
+      if (!res.ok) {
+        throw new Error(data.error || "Failed to check payment status");
+      }
+      
+      // Update booking if status changed
+      if (data.statusUpdated) {
+        setBooking(prev => prev ? { ...prev, paymentStatus: data.bookingStatus } : null);
+      }
+      
+      setPaymentMessage(data.message);
+      
+      // Refresh booking data after a short delay
+      setTimeout(() => {
+        window.location.reload();
+      }, 2000);
+      
+    } catch (error) {
+      setPaymentMessage(error instanceof Error ? error.message : "Failed to check payment status");
+    } finally {
+      setRecheckingPayment(false);
     }
   }
 
@@ -400,9 +438,47 @@ export default function BookingDetail({ bookingId }: { bookingId: string }) {
               </div>
             )}
             {event?.venueName && <div className="bd-meta-item">{event.venueName}</div>}
-            <div className="bd-meta-item"><StatusBadge status={booking.paymentStatus} /></div>
+            <div className="bd-meta-item">
+              <StatusBadge status={booking.paymentStatus} />
+            </div>
+            {booking.paymentStatus === "pending_payment" && (
+              <div className="bd-meta-item">
+                <button
+                  onClick={handleRecheckPayment}
+                  disabled={recheckingPayment}
+                  style={{
+                    padding: "4px 8px",
+                    fontSize: "10px",
+                    background: recheckingPayment ? "rgba(201,185,122,0.2)" : "rgba(201,185,122,0.1)",
+                    border: "1px solid rgba(201,185,122,0.3)",
+                    borderRadius: "4px",
+                    color: "#c9b97a",
+                    cursor: recheckingPayment ? "not-allowed" : "pointer",
+                    opacity: recheckingPayment ? 0.6 : 1,
+                    transition: "all 0.2s",
+                  }}
+                >
+                  {recheckingPayment ? "Checking..." : "Recheck Payment"}
+                </button>
+              </div>
+            )}
             <div className="bd-meta-item">{totalTickets} ticket{totalTickets === 1 ? "" : "s"}</div>
           </div>
+
+          {paymentMessage && (
+            <div style={{
+              padding: "8px 12px",
+              background: paymentMessage.includes("updated") ? "rgba(201,185,122,0.1)" : "rgba(224,82,82,0.1)",
+              border: `1px solid ${paymentMessage.includes("updated") ? "rgba(201,185,122,0.3)" : "rgba(224,82,82,0.3)"}`,
+              borderRadius: "6px",
+              fontSize: "12px",
+              color: paymentMessage.includes("updated") ? "#c9b97a" : "#e05252",
+              marginBottom: "16px",
+              textAlign: "center",
+            }}>
+              {paymentMessage}
+            </div>
+          )}
 
           <Card>
             <CardLabel>Entry Pass</CardLabel>

@@ -2,10 +2,11 @@ import { sanityClient } from "@/lib/sanity/client";
 import { urlFor } from "@/lib/sanity/image";
 import Image from "next/image";
 import type { Metadata } from "next";
-import type { Event, Artist, TicketType } from "@/types/event";
-import ExpandableDescription from "@/components/event/ExpandableDescription";
+import { formatEventDate } from "@/lib/utils/date-helpers";
 import EventSidebar from "@/components/event/EventSidebar";
+import ExpandableDescription from "@/components/event/ExpandableDescription";
 import EventMobileStickyBar from "@/components/event/EventMobileStickyBar";
+import type { Event, TicketType, Artist } from "@/types/event";
 
 async function getEvent(slug: string): Promise<Event | null> {
   const query = `*[_type == "event" && eventSlug.current == $slug][0]{
@@ -117,32 +118,6 @@ function getArtistLink(instagram: string | undefined): string | null {
   const cleaned = instagram.trim();
   if (cleaned.startsWith("http://") || cleaned.startsWith("https://")) return cleaned;
   return `https://instagram.com/${cleaned.replace(/^@/, "")}`;
-}
-
-function formatEventDate(dateStr: string) {
-  const localStr = dateStr.replace(/Z$/, "").replace(/([+-]\d{2}:\d{2})$/, "");
-  const date = new Date(localStr);
-
-  const days = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
-  const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun",
-                  "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
-
-  const day   = days[date.getDay()];
-  const dd    = String(date.getDate()).padStart(2, "0");
-  const mon   = months[date.getMonth()];
-  const yyyy  = date.getFullYear();
-
-  let hours   = date.getHours();
-  const mins  = String(date.getMinutes()).padStart(2, "0");
-  const ampm  = hours >= 12 ? "PM" : "AM";
-  hours       = hours % 12 || 12;
-  const time  = `${String(hours).padStart(2, "0")}:${mins} ${ampm}`;
-
-  return {
-    day,
-    date: `${dd} ${mon} ${yyyy}`,
-    time,
-  };
 }
 
 export default async function EventPage({

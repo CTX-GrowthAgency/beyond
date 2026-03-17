@@ -3,8 +3,9 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import { getAuth, onAuthStateChanged } from "firebase/auth";
-import { getFirestore, collection, query, where, getDocs, doc, getDoc, Timestamp } from "firebase/firestore";
+import { where, Timestamp } from "firebase/firestore";
 import { app } from "@/lib/firebase/client";
+import { getCachedQuery, getCachedDoc } from "@/lib/firestore/optimized-client";
 
 interface BookingDoc {
   id: string;
@@ -63,6 +64,7 @@ export default function BookingsList() {
   const [bookings, setBookings] = useState<(BookingDoc & { _event?: EventLite })[]>([]);
   const [loading, setLoading] = useState(true);
   const [uid, setUid] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     const auth = getAuth(app);
@@ -74,29 +76,38 @@ export default function BookingsList() {
         return;
       }
       setUid(user.uid);
-      const db = getFirestore(app);
-      const q = query(collection(db, "bookings"), where("userId", "==", user.uid));
+      setError(null);
       try {
-        const snap = await getDocs(q);
-        const list: BookingDoc[] = snap.docs.map((d) => ({
-          id: d.id,
-          ...(d.data() as Omit<BookingDoc, "id">),
-        }));
+        // Use optimized cached query
+        const list = await getCachedQuery(
+          "bookings",
+          [where("userId", "==", user.uid)],
+          `user:${user.uid}:bookings`
+        );
 
         const uniqueEventIds = Array.from(
-          new Set(list.map((b) => String(b.eventId)).filter(Boolean))
+          new Set(list.map((b: any) => String(b.eventId)).filter(Boolean))
         );
+        
+        // Batch fetch events for better performance
+        const eventFetches = uniqueEventIds.map(eventId => 
+          getCachedDoc("events", eventId)
+        );
+        const eventResults = await Promise.all(eventFetches);
+        
         const eventMap = new Map<string, EventLite>();
-        await Promise.all(
-          uniqueEventIds.map(async (eventId) => {
-            const es = await getDoc(doc(db, "events", eventId));
-            if (es.exists()) eventMap.set(eventId, es.data() as EventLite);
-          })
-        );
+        eventResults.forEach((eventData, index) => {
+          if (eventData) {
+            eventMap.set(uniqueEventIds[index], eventData as EventLite);
+          }
+        });
 
-        const enriched = list.map((b) => ({ ...b, _event: eventMap.get(String(b.eventId)) }));
+        const enriched = list.map((b: any) => ({ 
+          ...b, 
+          _event: eventMap.get(String(b.eventId)) 
+        }));
 
-        enriched.sort((a, b) => {
+        enriched.sort((a: any, b: any) => {
           const ta = a.createdAt instanceof Timestamp ? a.createdAt.toMillis() : 0;
           const tb = b.createdAt instanceof Timestamp ? b.createdAt.toMillis() : 0;
           return tb - ta;
@@ -104,6 +115,7 @@ export default function BookingsList() {
         setBookings(enriched);
       } catch (err) {
         console.error("Bookings fetch failed:", err);
+        setError(err instanceof Error ? err.message : "Failed to load bookings");
       } finally {
         setLoading(false);
       }
@@ -346,6 +358,37 @@ export default function BookingsList() {
               </li>
             ))}
           </ul>
+        </div>
+      </>
+    );
+  }
+
+  // ── Error state ─────────────────────────────────────────────────────────────
+  if (error) {
+    return (
+      <>
+        <style>{styles}</style>
+        <div className="bl-root">
+          <div className="bl-header">
+            <div className="bl-eyebrow">Account</div>
+            <h1 className="bl-title">My Bookings</h1>
+          </div>
+          <div className="bl-empty">
+            <div className="bl-empty-icon">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#e05252" strokeWidth="1.5">
+                <path d="M12 9v4M12 17h.01M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
+              </svg>
+            </div>
+            <p className="bl-empty-title">Connection Error</p>
+            <p className="bl-empty-sub">{error}</p>
+            <button 
+              className="bl-browse-btn" 
+              onClick={() => window.location.reload()}
+              style={{ cursor: 'pointer', border: 'none' }}
+            >
+              Try Again
+            </button>
+          </div>
         </div>
       </>
     );

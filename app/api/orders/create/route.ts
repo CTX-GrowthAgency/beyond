@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getAdminDb } from "@/lib/firebase/admin";
 import { FieldValue } from "firebase-admin/firestore";
+import { rateLimit } from "@/lib/security/rate-limiter";
+import { sanitizeBookingData, validateEmail, validateObjectId } from "@/lib/security/input-validation";
 
 function getCashfreeErrorMessage(cfData: unknown): string {
   if (!cfData || typeof cfData !== "object") return "Unknown error";
@@ -15,11 +17,36 @@ function getCashfreeErrorMessage(cfData: unknown): string {
 
 export async function POST(req: NextRequest) {
   try {
+    // ── Rate limiting ─────────────────────────────────────────────────────────────
+    const limiter = rateLimit({ windowMs: 15 * 60 * 1000, maxRequests: 10 }); // 10 requests per 15 minutes
+    const rateLimitResult = limiter(req);
+    if (!rateLimitResult.success) {
+      return NextResponse.json(
+        { error: "Too many requests. Please try again later." },
+        { status: 429 }
+      );
+    }
+
     const { bookingId, amount, customer } = await req.json();
 
+    // ── Input validation ────────────────────────────────────────────────────────
     if (!bookingId || !amount || !customer?.id || !customer?.email) {
       return NextResponse.json(
         { error: "Missing required fields" },
+        { status: 400 }
+      );
+    }
+
+    if (!validateObjectId(bookingId) || !validateObjectId(customer.id)) {
+      return NextResponse.json(
+        { error: "Invalid ID format" },
+        { status: 400 }
+      );
+    }
+
+    if (!validateEmail(customer.email)) {
+      return NextResponse.json(
+        { error: "Invalid email format" },
         { status: 400 }
       );
     }

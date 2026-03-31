@@ -5,7 +5,7 @@ import { rateLimit } from "@/lib/security/rate-limiter";
 
 export async function POST(
   req: NextRequest,
-  { params }: { params: { bookingId: string } }
+  { params }: { params: Promise<{ bookingId: string }> }
 ) {
   try {
     // Rate limiting
@@ -18,7 +18,7 @@ export async function POST(
       );
     }
 
-    const { bookingId } = params;
+    const { bookingId } = await params;
 
     if (!bookingId) {
       return NextResponse.json(

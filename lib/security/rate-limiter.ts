@@ -10,7 +10,11 @@ export function rateLimit({
   maxRequests?: number;
 } = {}) {
   return function (req: NextRequest): { success: boolean; resetTime?: number } {
-    const ip = req.ip || req.headers.get('x-forwarded-for') || 'unknown';
+    // Get IP from various headers since req.ip doesn't exist in NextRequest
+    const ip = req.headers.get('x-forwarded-for') || 
+              req.headers.get('x-real-ip') || 
+              req.headers.get('cf-connecting-ip') || 
+              'unknown';
     const key = `${ip}:${req.nextUrl.pathname}`;
     const now = Date.now();
     

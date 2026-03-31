@@ -1,3 +1,4 @@
-export default function SelectTicketsPage({ params }: { params: { slug: string } }) {
-  return <div>Select tickets for event: {params.slug}</div>;
+export default async function SelectTicketsPage({ params }: { params: Promise<{ slug: string }> }) {
+  const { slug } = await params;
+  return <div>Select tickets for event: {slug}</div>;
 }

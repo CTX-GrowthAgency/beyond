@@ -24,14 +24,22 @@ export default function BookTicketsDialog({
   const [quantities, setQuantities] = useState<Record<number, number>>({});
   const [isLoggingIn, setIsLoggingIn] = useState(false);
   const [user, setUser] = useState<{ uid: string } | null>(null);
+  const [shouldNavigateAfterLogin, setShouldNavigateAfterLogin] = useState(false);
   const router = useRouter();
 
   useEffect(() => {
     const auth = getAuth(app);
     return onAuthStateChanged(auth, (firebaseUser) => {
-      setUser(firebaseUser ? { uid: firebaseUser.uid } : null);
+      const newUser = firebaseUser ? { uid: firebaseUser.uid } : null;
+      setUser(newUser);
+      
+      // If user just logged in and we should navigate, do it
+      if (newUser && shouldNavigateAfterLogin && isLoggingIn) {
+        navigateToCheckout();
+        setShouldNavigateAfterLogin(false);
+      }
     });
-  }, []);
+  }, [shouldNavigateAfterLogin, isLoggingIn]);
 
   useEffect(() => {
     if (isOpen && ticketTypes.length > 0) {
@@ -62,6 +70,9 @@ export default function BookTicketsDialog({
     0
   );
 
+  // Check if any tickets have capacity > 0
+  const hasAvailableTickets = ticketTypes.some(ticket => (ticket.capacity ?? 0) > 0);
+
   function navigateToCheckout() {
     const params = new URLSearchParams();
     ticketTypes.forEach((t, i) => {
@@ -70,12 +81,13 @@ export default function BookTicketsDialog({
     });
     const query = params.toString();
     router.push(`/checkout/${eventSlug}${query ? `?${query}` : ""}`);
-    onClose();
+    // Don't close dialog immediately - let navigation happen naturally
   }
 
   async function handleLogin() {
     if (isLoggingIn) return;
     setIsLoggingIn(true);
+    setShouldNavigateAfterLogin(true);
     try {
       const auth = getAuth(app);
       const provider = new GoogleAuthProvider();
@@ -88,9 +100,10 @@ export default function BookTicketsDialog({
       });
       if (!res.ok) throw new Error("Could not create server session");
       router.refresh();
-      navigateToCheckout();
+      // Navigation will happen in useEffect when user state updates
     } catch (error) {
       console.error("Login failed:", error);
+      setShouldNavigateAfterLogin(false);
     } finally {
       setIsLoggingIn(false);
     }
@@ -111,6 +124,12 @@ export default function BookTicketsDialog({
 
   return (
     <div className="ev-dialog-overlay" onClick={onClose}>
+      {isLoggingIn && (
+        <div className="ev-dialog-loading-overlay">
+          <div className="ev-dialog-loading-spinner"></div>
+          <div className="ev-dialog-loading-text">Signing in...</div>
+        </div>
+      )}
       <div
         className="ev-dialog"
         onClick={(e) => e.stopPropagation()}
@@ -137,6 +156,8 @@ export default function BookTicketsDialog({
         <div className="ev-dialog-body">
           {ticketTypes.length === 0 ? (
             <p className="ev-dialog-empty">No tickets available.</p>
+          ) : !hasAvailableTickets ? (
+            <p className="ev-dialog-empty">All tickets are sold out.</p>
           ) : (
             <div className="ev-dialog-ticket-list">
               {ticketTypes.map((ticket, i) => (
@@ -146,13 +167,18 @@ export default function BookTicketsDialog({
                     {ticket.description && (
                       <div className="ev-dialog-ticket-desc">{ticket.description}</div>
                     )}
-                    <div className="ev-dialog-ticket-price">₹{ticket.price?.toLocaleString("en-IN")}</div>
+                    <div className="ev-dialog-ticket-price">
+                      {(ticket.capacity ?? 0) > 0 
+                        ? `₹${ticket.price?.toLocaleString("en-IN")}`
+                        : <span className="sold-out">SOLD OUT</span>
+                      }
+                    </div>
                   </div>
                   <div className="ev-dialog-ticket-controls">
                     <button
                       type="button"
                       onClick={() => decrement(i)}
-                      disabled={(quantities[i] ?? 0) === 0}
+                      disabled={(quantities[i] ?? 0) === 0 || (ticket.capacity ?? 0) === 0}
                       className="ev-dialog-counter-btn"
                       aria-label="Decrease"
                     >
@@ -162,6 +188,7 @@ export default function BookTicketsDialog({
                     <button
                       type="button"
                       onClick={() => increment(i)}
+                      disabled={(ticket.capacity ?? 0) === 0}
                       className="ev-dialog-counter-btn"
                       aria-label="Increase"
                     >
@@ -182,14 +209,16 @@ export default function BookTicketsDialog({
           <button
             type="button"
             onClick={handleBookTickets}
-            disabled={totalTickets === 0}
-            className="ev-dialog-book-btn"
+            disabled={totalTickets === 0 || !hasAvailableTickets}
+            className={`ev-dialog-book-btn ${!hasAvailableTickets ? 'sold-out' : ''}`}
           >
-            {!user && totalTickets > 0
-              ? isLoggingIn
-                ? "Signing in..."
-                : "Login to Book Tickets"
-              : "Book Tickets"}
+            {!hasAvailableTickets
+              ? "SOLD OUT"
+              : !user && totalTickets > 0
+                ? isLoggingIn
+                  ? "Signing in..."
+                  : "Login to Book Tickets"
+                : "Book Tickets"}
           </button>
         </div>
       </div>
